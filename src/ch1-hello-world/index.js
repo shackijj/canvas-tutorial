@@ -1,4 +1,4 @@
-function canvasApp() {
+export function canvasApp() {
     if (!Modernizr.canvas) {
         return;
     }
@@ -28,7 +28,3 @@ function canvasApp() {
     drawScreen();
 
 }
-
-window.addEventListener('load', function() {
-    canvasApp();
-});

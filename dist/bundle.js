@@ -73,90 +73,105 @@
 "use strict";
 
 
-var theCanvas = document.getElementById('canvasOne');
-var context = theCanvas.getContext('2d');
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.canvasApp = canvasApp;
+function canvasApp() {
+    var theCanvas = document.getElementById('canvasOne');
+    var context = theCanvas.getContext('2d');
+    var formElement = document.getElementById('createImageDate');
+    formElement.addEventListener('click', createImageDatePressed, false);
 
-var guesses = 0;
-var message = 'Guess the Letter From a (lower) to z (higher)';
-var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
-var today = new Date();
-var letterToGuess = "";
-var higherOrLower = "";
-var lettersGuessed = void 0;
-var gameOver = false;
+    var guesses = 0;
+    var message = 'Guess the Letter From a (lower) to z (higher)';
+    var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+    var today = new Date();
+    var letterToGuess = "";
+    var higherOrLower = "";
+    var lettersGuessed = void 0;
+    var gameOver = false;
 
-function initGame() {
-    var letterIndex = Math.floor(Math.random() * letters.length);
-    letterToGuess = letters[letterIndex];
-    guesses = 0;
-    lettersGuessed = [];
-    gameOver = false;
-    window.addEventListener('keydown', eventKeyPresses, true);
-    drawScreen();
-}
-
-function eventKeyPresses(event) {
-    if (gameOver) {
-        return;
+    function initGame() {
+        var letterIndex = Math.floor(Math.random() * letters.length);
+        letterToGuess = letters[letterIndex];
+        guesses = 0;
+        lettersGuessed = [];
+        gameOver = false;
+        window.addEventListener('keydown', eventKeyPresses, true);
+        drawScreen();
     }
-    var letterPressed = String.fromCharCode(event.keyCode);
-    letterPressed = letterPressed.toLowerCase();
-    guesses++;
-    lettersGuessed.push(letterPressed);
-    if (letterPressed === letterToGuess) {
-        gameOver = true;
-    } else {
-        var letterIndex = letters.indexOf(letterToGuess);
-        var guessIndex = letters.indexOf(letterPressed);
 
-        if (guessIndex < 0) {
-            higherOrLower = 'That is not a letter.';
-        } else if (guessIndex > letterIndex) {
-            higherOrLower = 'lower';
+    function eventKeyPresses(event) {
+        if (gameOver) {
+            return;
+        }
+        var letterPressed = String.fromCharCode(event.keyCode);
+        letterPressed = letterPressed.toLowerCase();
+        guesses++;
+        lettersGuessed.push(letterPressed);
+        if (letterPressed === letterToGuess) {
+            gameOver = true;
         } else {
-            higherOrLower = 'higher';
+            var letterIndex = letters.indexOf(letterToGuess);
+            var guessIndex = letters.indexOf(letterPressed);
+
+            if (guessIndex < 0) {
+                higherOrLower = 'That is not a letter.';
+            } else if (guessIndex > letterIndex) {
+                higherOrLower = 'lower';
+            } else {
+                higherOrLower = 'higher';
+            }
+        }
+        drawScreen();
+    }
+
+    function drawScreen() {
+        // backgroud
+        context.fillStyle = '#ffffaa';
+        context.fillRect(0, 0, 500, 300);
+
+        // box
+        context.strokeStyle = '#000000';
+        context.strokeRect(5, 5, 490, 290);
+        context.textBaseLine = 'top';
+        // date
+        context.fillStyle = '#000000';
+        context.font = '10px Sans-Serif';
+        context.fillText(today, 150, 20);
+        // message
+        context.fillStyle = '#FF0000';
+        context.font = "14px Sans-Serif";
+        context.fillText(message, 125, 35);
+        // guesses
+        context.fillStyle = '16px Sans-Serif';
+        context.fillText('Guesses: ' + guesses, 215, 50);
+        // higher or lower
+        context.fillStyle = '#000000';
+        context.font = '16px Sans-Serif';
+        context.fillText('Higher or Lower: ' + higherOrLower, 150, 125);
+        // letter guessed
+        context.fillStyle = '#FF0000';
+        context.font = '16px Sans-Serif';
+        context.fillText('Letters Guessed: ' + lettersGuessed.toString(), 10, 260);
+
+        if (gameOver) {
+            context.fillStyle = '#FF0000';
+            context.font = '40px Sans-Serif';
+            context.fillText('You got it!', 150, 180);
         }
     }
-    drawScreen();
-}
 
-function drawScreen() {
-    // backgroud
-    context.fillStyle = '#ffffaa';
-    context.fillRect(0, 0, 500, 300);
+    function createImageDatePressed(e) {
+        var width = theCanvas.width,
+            height = theCanvas.height;
 
-    // box
-    context.strokeStyle = '#000000';
-    context.strokeRect(5, 5, 490, 290);
-    context.textBaseLine = 'top';
-    // date
-    context.fillStyle = '#000000';
-    context.font = '10px Sans-Serif';
-    context.fillText(today, 150, 20);
-    // message
-    context.fillStyle = '#FF0000';
-    context.font = "14px Sans-Serif";
-    context.fillText(message, 125, 35);
-    // guesses
-    context.fillStyle = '16px Sans-Serif';
-    context.fillText('Guesses: ' + guesses, 215, 50);
-    // higher or lower
-    context.fillStyle = '#000000';
-    context.font = '16px Sans-Serif';
-    context.fillText('Higher or Lower: ' + higherOrLower, 150, 125);
-    // letter guessed
-    context.fillStyle = '#FF0000';
-    context.font = '16px Sans-Serif';
-    context.fillText('Letters Guessed: ' + lettersGuessed.toString(), 10, 260);
-
-    if (gameOver) {
-        context.fillStyle = '#FF0000';
-        context.font = '40px Sans-Serif';
-        context.fillText('You got it!', 150, 180);
+        window.open(theCanvas.toDataURL(), "canvasImage", 'left=0,top=0,width=' + width + ',height=' + height + ',toolbar=0,resizable=0');
     }
-}
 
-window.addEventListener('load', initGame);
+    initGame();
+}
 
 /***/ }),
 /* 1 */
@@ -165,7 +180,9 @@ window.addEventListener('load', initGame);
 "use strict";
 
 
-__webpack_require__(0);
+var _ch1GuessTheWord = __webpack_require__(0);
+
+window.addEventListener('load', _ch1GuessTheWord.canvasApp);
 
 /***/ })
 /******/ ]);
