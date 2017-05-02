@@ -1,4 +1,13 @@
 export function canvasApp() {
+    const appElement = document.getElementById('app');
+
+    const appTemplate = 
+        `<canvas id="canvasOne" width="500" height="300">
+        Your browser doesn't support HTML5 canvas.
+        </canvas>`;
+
+    appElement.innerHTML = appTemplate;
+
     if (!Modernizr.canvas) {
         return;
     }

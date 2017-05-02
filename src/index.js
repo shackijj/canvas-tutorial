@@ -1,3 +1,3 @@
-import { canvasApp } from './ch1-guess-the-word';
+import { canvasApp } from './ch1-hello-world-animated';
 
 window.addEventListener('load', canvasApp);
