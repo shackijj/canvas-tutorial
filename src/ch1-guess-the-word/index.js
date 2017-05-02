@@ -1,4 +1,17 @@
 export function canvasApp() {
+    const appElement = getElementById('app');
+
+    const appTemplate = 
+        `<canvas id="canvasOne" width="500" height="300">
+        Your browser doesn't support HTML5 canvas.
+        </canvas>
+        <form>
+            <input type="button" id="createImageDate" value="Export Canvas Image"/>
+        </form>`;
+
+    appElement.innerHTML = appTemplate;
+
+
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext('2d');
     const formElement = document.getElementById('createImageDate');

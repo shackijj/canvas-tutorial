@@ -77,100 +77,67 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.canvasApp = canvasApp;
+
+var _utils = __webpack_require__(2);
+
 function canvasApp() {
+    if (!Modernizr.canvas) {
+        return;
+    }
+
+    var appElement = document.getElementById('app');
+
+    var appTemplate = '<canvas id="canvasOne" width="640" height="480">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+
+    appElement.innerHTML = appTemplate;
+
     var theCanvas = document.getElementById('canvasOne');
-    var context = theCanvas.getContext('2d');
-    var formElement = document.getElementById('createImageDate');
-    formElement.addEventListener('click', createImageDatePressed, false);
+    var context = theCanvas.getContext("2d");
 
-    var guesses = 0;
-    var message = 'Guess the Letter From a (lower) to z (higher)';
-    var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
-    var today = new Date();
-    var letterToGuess = "";
-    var higherOrLower = "";
-    var lettersGuessed = void 0;
-    var gameOver = false;
+    var alpha = 0;
+    var fadeIn = true;
+    var text = 'Hello World';
 
-    function initGame() {
-        var letterIndex = Math.floor(Math.random() * letters.length);
-        letterToGuess = letters[letterIndex];
-        guesses = 0;
-        lettersGuessed = [];
-        gameOver = false;
-        window.addEventListener('keydown', eventKeyPresses, true);
-        drawScreen();
-    }
-
-    function eventKeyPresses(event) {
-        if (gameOver) {
-            return;
-        }
-        var letterPressed = String.fromCharCode(event.keyCode);
-        letterPressed = letterPressed.toLowerCase();
-        guesses++;
-        lettersGuessed.push(letterPressed);
-        if (letterPressed === letterToGuess) {
-            gameOver = true;
-        } else {
-            var letterIndex = letters.indexOf(letterToGuess);
-            var guessIndex = letters.indexOf(letterPressed);
-
-            if (guessIndex < 0) {
-                higherOrLower = 'That is not a letter.';
-            } else if (guessIndex > letterIndex) {
-                higherOrLower = 'lower';
-            } else {
-                higherOrLower = 'higher';
-            }
-        }
-        drawScreen();
-    }
+    var helloWorldImage = new Image();
+    helloWorldImage.src = 'images/hello-world.png';
 
     function drawScreen() {
-        // backgroud
-        context.fillStyle = '#ffffaa';
-        context.fillRect(0, 0, 500, 300);
-
-        // box
-        context.strokeStyle = '#000000';
-        context.strokeRect(5, 5, 490, 290);
-        context.textBaseLine = 'top';
-        // date
+        // background
+        context.globalAlpha = 1;
         context.fillStyle = '#000000';
-        context.font = '10px Sans-Serif';
-        context.fillText(today, 150, 20);
-        // message
-        context.fillStyle = '#FF0000';
-        context.font = "14px Sans-Serif";
-        context.fillText(message, 125, 35);
-        // guesses
-        context.fillStyle = '16px Sans-Serif';
-        context.fillText('Guesses: ' + guesses, 215, 50);
-        // higher or lower
-        context.fillStyle = '#000000';
-        context.font = '16px Sans-Serif';
-        context.fillText('Higher or Lower: ' + higherOrLower, 150, 125);
-        // letter guessed
-        context.fillStyle = '#FF0000';
-        context.font = '16px Sans-Serif';
-        context.fillText('Letters Guessed: ' + lettersGuessed.toString(), 10, 260);
+        context.fillRect(0, 0, 640, 480);
 
-        if (gameOver) {
-            context.fillStyle = '#FF0000';
-            context.font = '40px Sans-Serif';
-            context.fillText('You got it!', 150, 180);
+        context.globalAlpha = 0.25;
+        context.drawImage(helloWorldImage, 0, 0);
+
+        if (fadeIn) {
+            alpha += 0.01;
+            if (alpha >= 1) {
+                alpha = 1;
+                fadeIn = false;
+            }
+        } else {
+            alpha -= 0.01;
+            if (alpha < 0) {
+                alpha = 0;
+                fadeIn = true;
+            }
         }
+
+        context.globalAlpha = alpha;
+        // font
+        context.font = '72px Sans-Serif';
+        context.textBaseline = 'top';
+        context.fillStyle = '#FFFFFF';
+        context.fillText(text, 150, 200);
     }
 
-    function createImageDatePressed(e) {
-        var width = theCanvas.width,
-            height = theCanvas.height;
-
-        window.open(theCanvas.toDataURL(), "canvasImage", 'left=0,top=0,width=' + width + ',height=' + height + ',toolbar=0,resizable=0');
+    function gameLoop() {
+        (0, _utils.requestAnimFrame)(gameLoop);
+        drawScreen();
     }
 
-    initGame();
+    gameLoop();
 }
 
 /***/ }),
@@ -180,9 +147,29 @@ function canvasApp() {
 "use strict";
 
 
-var _ch1GuessTheWord = __webpack_require__(0);
+var _ch1HelloWorldAnimated = __webpack_require__(0);
 
-window.addEventListener('load', _ch1GuessTheWord.canvasApp);
+window.addEventListener('load', _ch1HelloWorldAnimated.canvasApp);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function getRequestAnimationFrame() {
+    function requestAnimationFrameFallback(cb) {
+        window.setTimeout(cb, 1000 / 60);
+    }
+
+    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || requestAnimationFrameFallback;
+}
+
+var requestAnimFrame = exports.requestAnimFrame = getRequestAnimationFrame();
 
 /***/ })
 /******/ ]);
