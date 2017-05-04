@@ -14,13 +14,61 @@ export function canvasApp() {
         return;
     }
 
+    function simplePaths() {
+        context.strokeStyle = 'black';
+        context.lineWidth = 10;
+
+        context.lineJoin = 'bevel';
+        context.lineCap = 'round';
+        // sample 1 round, bevel
+
+        context.beginPath();
+        context.moveTo(10, 10);
+        context.lineTo(35, 10);
+        context.lineTo(35, 35);
+        context.stroke();
+        context.closePath();
+
+        // sample 2 round, bevel
+        context.beginPath();
+        context.moveTo(10, 60);
+        context.lineTo(35, 60);
+        context.lineTo(35, 85);
+        context.stroke();
+        context.closePath();
+
+        // sampe 3 round, butt
+        context.lineJoin = 'round';
+        context.lineCap = 'butt';
+        context.beginPath();
+        context.moveTo(10, 110);
+        context.lineTo(35, 110);
+        context.lineTo(35, 135);
+        context.stroke();
+        context.closePath();
+    }
+
+    function advancedPaths() {
+        // arc
+        context.beginPath();
+        context.strokeStyle = 'red';
+        context.lineWidth = 5;
+        context.arc(250, 250, 20, (Math.PI / 180) * 30, (Math.PI / 180) * 150, true);
+        // fill
+        context.stroke();
+        context.closePath();
+
+        context.beginPath();
+        context.strokeStyle = 'green';
+        context.moveTo(0, 0);
+        context.lineTo(100, 200);
+        context.arcTo(350, 350, 100, 100, 20);
+        context.stroke();
+        context.closePath();
+    }
+
     function drawScreen() {
-        context.fillStyle = '#000000';
-        context.strokeStyle = '#ff00ff';
-        context.lineWidth = 2;
-        context.fillRect(10, 10, 40, 40);
-        context.strokeRect(0, 0, 60, 60);
-        context.clearRect(20, 20, 20, 20);
+        advancedPaths();
     }
 
     drawScreen();
