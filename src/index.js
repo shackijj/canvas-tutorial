@@ -1,3 +1,3 @@
-import { canvasApp } from './ch1-hello-world-animated';
+import { canvasApp } from './ch2-drawing-on-canvas';
 
 window.addEventListener('load', canvasApp);

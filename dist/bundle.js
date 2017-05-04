@@ -77,67 +77,29 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.canvasApp = canvasApp;
-
-var _utils = __webpack_require__(2);
-
 function canvasApp() {
+    var appElement = document.getElementById('app');
+
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+
+    appElement.innerHTML = appTemplate;
+    var theCanvas = document.getElementById('canvasOne');
+    var context = theCanvas.getContext("2d");
+
     if (!Modernizr.canvas) {
         return;
     }
 
-    var appElement = document.getElementById('app');
-
-    var appTemplate = '<canvas id="canvasOne" width="640" height="480">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
-
-    appElement.innerHTML = appTemplate;
-
-    var theCanvas = document.getElementById('canvasOne');
-    var context = theCanvas.getContext("2d");
-
-    var alpha = 0;
-    var fadeIn = true;
-    var text = 'Hello World';
-
-    var helloWorldImage = new Image();
-    helloWorldImage.src = 'images/hello-world.png';
-
     function drawScreen() {
-        // background
-        context.globalAlpha = 1;
         context.fillStyle = '#000000';
-        context.fillRect(0, 0, 640, 480);
-
-        context.globalAlpha = 0.25;
-        context.drawImage(helloWorldImage, 0, 0);
-
-        if (fadeIn) {
-            alpha += 0.01;
-            if (alpha >= 1) {
-                alpha = 1;
-                fadeIn = false;
-            }
-        } else {
-            alpha -= 0.01;
-            if (alpha < 0) {
-                alpha = 0;
-                fadeIn = true;
-            }
-        }
-
-        context.globalAlpha = alpha;
-        // font
-        context.font = '72px Sans-Serif';
-        context.textBaseline = 'top';
-        context.fillStyle = '#FFFFFF';
-        context.fillText(text, 150, 200);
+        context.strokeStyle = '#ff00ff';
+        context.lineWidth = 2;
+        context.fillRect(10, 10, 40, 40);
+        context.strokeRect(0, 0, 60, 60);
+        context.clearRect(20, 20, 20, 20);
     }
 
-    function gameLoop() {
-        (0, _utils.requestAnimFrame)(gameLoop);
-        drawScreen();
-    }
-
-    gameLoop();
+    drawScreen();
 }
 
 /***/ }),
@@ -147,29 +109,9 @@ function canvasApp() {
 "use strict";
 
 
-var _ch1HelloWorldAnimated = __webpack_require__(0);
+var _ch2DrawingOnCanvas = __webpack_require__(0);
 
-window.addEventListener('load', _ch1HelloWorldAnimated.canvasApp);
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-function getRequestAnimationFrame() {
-    function requestAnimationFrameFallback(cb) {
-        window.setTimeout(cb, 1000 / 60);
-    }
-
-    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || requestAnimationFrameFallback;
-}
-
-var requestAnimFrame = exports.requestAnimFrame = getRequestAnimationFrame();
+window.addEventListener('load', _ch2DrawingOnCanvas.canvasApp);
 
 /***/ })
 /******/ ]);
