@@ -1,74 +1,67 @@
 export function canvasApp() {
-    const appElement = document.getElementById('app');
+    if (!Modernizr.canvas) {
+        return;
+    }
 
+    const appElement = document.getElementById('app');
     const appTemplate = 
         `<canvas id="canvasOne" width="500" height="500">
         Your browser doesn't support HTML5 canvas.
         </canvas>`;
 
     appElement.innerHTML = appTemplate;
+
+
+
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
 
-    if (!Modernizr.canvas) {
-        return;
-    }
+    function linear() {
+        const gr = context.createLinearGradient(0, 0, 100, 0);
+        gr.addColorStop(0, 'rgb(255,0,0)');
+        gr.addColorStop(0.5, 'rgb(0,255,0)');
+        gr.addColorStop(1, 'rgb(255,0,0)');
 
-    function simplePaths() {
-        context.strokeStyle = 'black';
-        context.lineWidth = 10;
+        
+        /*
+        context.fillStyle = gr;
+        context.fillRect(0, 0, 100, 100);
+        context.fillRect(0, 100, 50, 100);
+        context.fillRect(0, 200, 200, 100);
+        */
 
-        context.lineJoin = 'bevel';
-        context.lineCap = 'round';
-        // sample 1 round, bevel
+        /*
+        context.strokeStyle = gr;
+        context.strokeRect(0, 0, 100, 100);
+        context.strokeRect(0, 100, 50, 100);
+        context.strokeRect(0, 200, 200, 100);
+        */
 
+        context.fillStyle = gr;
         context.beginPath();
-        context.moveTo(10, 10);
-        context.lineTo(35, 10);
-        context.lineTo(35, 35);
-        context.stroke();
-        context.closePath();
-
-        // sample 2 round, bevel
-        context.beginPath();
-        context.moveTo(10, 60);
-        context.lineTo(35, 60);
-        context.lineTo(35, 85);
-        context.stroke();
-        context.closePath();
-
-        // sampe 3 round, butt
-        context.lineJoin = 'round';
-        context.lineCap = 'butt';
-        context.beginPath();
-        context.moveTo(10, 110);
-        context.lineTo(35, 110);
-        context.lineTo(35, 135);
-        context.stroke();
-        context.closePath();
-    }
-
-    function advancedPaths() {
-        // arc
-        context.beginPath();
-        context.strokeStyle = 'red';
-        context.lineWidth = 5;
-        context.arc(250, 250, 20, (Math.PI / 180) * 30, (Math.PI / 180) * 150, true);
-        // fill
-        context.stroke();
-        context.closePath();
-
-        context.beginPath();
-        context.strokeStyle = 'green';
         context.moveTo(0, 0);
-        context.lineTo(100, 200);
-        context.arcTo(350, 350, 100, 100, 20);
-        context.stroke();
+        context.lineTo(50, 0);
+        context.lineTo(100, 50);
+        context.lineTo(50, 100);
+        context.lineTo(0, 100);
+        context.lineTo(0, 0);
+        context.fill();
         context.closePath();
+
     }
 
     function drawScreen() {
-        advancedPaths();
+        const gr = context.createRadialGradient(50, 50, 25, 100, 100, 100);
+        gr.addColorStop(0, 'rgb(255,0,0');
+        gr.addColorStop(0.5, 'rgb(0,255,0)');
+        gr.addColorStop(1, 'rgb(255,0,0)');
+
+        context.fillStyle = gr;
+
+        /*context.fillRect(0, 0, 200, 200);*/
+
+        context.arc(100, 100, 100, 0, 2 * Math.PI, false);
+        context.fill();
     }
 
     drawScreen();
