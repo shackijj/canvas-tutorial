@@ -83,28 +83,75 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select>\n        </form>';
 
     appElement.innerHTML = appTemplate;
 
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
 
+    var input = document.getElementById('textBox');
+    input.addEventListener('keyup', textBoxChanged, false);
+
+    var select = document.getElementById('fillOrStroke');
+    select.addEventListener('change', fillOrStrokeChanged, false);
+
+    function clearRect() {
+        var width = theCanvas.width,
+            height = theCanvas.height;
+
+        context.clearRect(0, 0, width, height);
+    }
+
+    var message = 'some text';
+    var fillOrStroke = 'fill';
+
     function drawScreen() {
-        context.strokeStyle = 'red';
-        context.lineWidth = 1;
-        context.moveTo(0, 0);
-        context.lineTo(50, 0);
-        context.lineTo(50, 50);
+        clearRect();
 
-        var isPoint1InPath1 = context.isPointInPath(0, 0);
-        var isPoint1InPath2 = context.isPointInPath(60, 10);
+        context.fillStyle = 'gray';
+        context.fillRect(0, 0, 500, 500);
 
-        context.stroke();
+        context.strokeStyle = 'black';
+        context.strokeRect(10, 10, 480, 480);
 
-        console.log(isPoint1InPath1);
-        console.log(isPoint1InPath2);
-        context.closePath();
+        context.font = '50px serif';
+
+        var metrics = context.measureText(message);
+        var textWidth = metrics.width;
+        var xPosition = theCanvas.width / 2 - textWidth / 2;
+        var yPosition = theCanvas.height / 2;
+
+        switch (fillOrStroke) {
+            case 'fill':
+                context.fillStyle = '#FF0000';
+                context.fillText(message, xPosition, yPosition);
+                break;
+            case 'stroke':
+                context.strokeStyle = '#FF0000';
+                context.strokeText(message, xPosition, yPosition);
+                break;
+            case 'both':
+                context.fillStyle = '#FF0000';
+                context.fillText(message, xPosition, yPosition);
+                context.strokeStyle = '#000000';
+                context.strokeText(message, xPosition, yPosition);
+                break;
+        }
+    }
+
+    function textBoxChanged(event) {
+        var target = event.target;
+
+        message = target.value;
+        drawScreen();
+    }
+
+    function fillOrStrokeChanged(event) {
+        var target = event.target;
+
+        fillOrStroke = target.value;
+        drawScreen();
     }
 
     drawScreen();
@@ -117,9 +164,9 @@ function canvasApp() {
 "use strict";
 
 
-var _ch2DrawingOnCanvas = __webpack_require__(0);
+var _ch3TextApi = __webpack_require__(0);
 
-window.addEventListener('load', _ch2DrawingOnCanvas.canvasApp);
+window.addEventListener('load', _ch3TextApi.canvasApp);
 
 /***/ })
 /******/ ]);

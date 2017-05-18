@@ -1,3 +1,3 @@
-import { canvasApp } from './ch2-drawing-on-canvas';
+import { canvasApp } from './ch3-text-api';
 
 window.addEventListener('load', canvasApp);
