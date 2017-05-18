@@ -90,50 +90,21 @@ function canvasApp() {
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
 
-    function linear() {
-        var gr = context.createLinearGradient(0, 0, 100, 0);
-        gr.addColorStop(0, 'rgb(255,0,0)');
-        gr.addColorStop(0.5, 'rgb(0,255,0)');
-        gr.addColorStop(1, 'rgb(255,0,0)');
-
-        /*
-        context.fillStyle = gr;
-        context.fillRect(0, 0, 100, 100);
-        context.fillRect(0, 100, 50, 100);
-        context.fillRect(0, 200, 200, 100);
-        */
-
-        /*
-        context.strokeStyle = gr;
-        context.strokeRect(0, 0, 100, 100);
-        context.strokeRect(0, 100, 50, 100);
-        context.strokeRect(0, 200, 200, 100);
-        */
-
-        context.fillStyle = gr;
-        context.beginPath();
+    function drawScreen() {
+        context.strokeStyle = 'red';
+        context.lineWidth = 1;
         context.moveTo(0, 0);
         context.lineTo(50, 0);
-        context.lineTo(100, 50);
-        context.lineTo(50, 100);
-        context.lineTo(0, 100);
-        context.lineTo(0, 0);
-        context.fill();
+        context.lineTo(50, 50);
+
+        var isPoint1InPath1 = context.isPointInPath(0, 0);
+        var isPoint1InPath2 = context.isPointInPath(60, 10);
+
+        context.stroke();
+
+        console.log(isPoint1InPath1);
+        console.log(isPoint1InPath2);
         context.closePath();
-    }
-
-    function drawScreen() {
-        var gr = context.createRadialGradient(50, 50, 25, 100, 100, 100);
-        gr.addColorStop(0, 'rgb(255,0,0');
-        gr.addColorStop(0.5, 'rgb(0,255,0)');
-        gr.addColorStop(1, 'rgb(255,0,0)');
-
-        context.fillStyle = gr;
-
-        /*context.fillRect(0, 0, 200, 200);*/
-
-        context.arc(100, 100, 100, 0, 2 * Math.PI, false);
-        context.fill();
     }
 
     drawScreen();
