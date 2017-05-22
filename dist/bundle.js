@@ -83,18 +83,21 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select>\n        </form>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/>\n        </form>';
 
     appElement.innerHTML = appTemplate;
 
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
 
-    var input = document.getElementById('textBox');
-    input.addEventListener('keyup', textBoxChanged, false);
-
-    var select = document.getElementById('fillOrStroke');
-    select.addEventListener('change', fillOrStrokeChanged, false);
+    var appState = {
+        message: 'some text',
+        fillOrStroke: 'fill',
+        textSize: '50',
+        fontFace: 'serif',
+        fontWeight: 'normal',
+        fontStyle: 'normal'
+    };
 
     function clearRect() {
         var width = theCanvas.width,
@@ -103,8 +106,9 @@ function canvasApp() {
         context.clearRect(0, 0, width, height);
     }
 
-    var message = 'some text';
-    var fillOrStroke = 'fill';
+    function getFontString(state) {
+        return state.fontWeight + ' ' + state.fontStyle + ' ' + state.textSize + 'px ' + state.fontFace;
+    }
 
     function drawScreen() {
         clearRect();
@@ -115,44 +119,49 @@ function canvasApp() {
         context.strokeStyle = 'black';
         context.strokeRect(10, 10, 480, 480);
 
-        context.font = '50px serif';
-
-        var metrics = context.measureText(message);
+        context.font = getFontString(appState);
+        console.log(getFontString(appState));
+        var metrics = context.measureText(appState.message);
         var textWidth = metrics.width;
         var xPosition = theCanvas.width / 2 - textWidth / 2;
         var yPosition = theCanvas.height / 2;
 
-        switch (fillOrStroke) {
+        switch (appState.fillOrStroke) {
             case 'fill':
                 context.fillStyle = '#FF0000';
-                context.fillText(message, xPosition, yPosition);
+                context.fillText(appState.message, xPosition, yPosition);
                 break;
             case 'stroke':
                 context.strokeStyle = '#FF0000';
-                context.strokeText(message, xPosition, yPosition);
+                context.strokeText(appState.message, xPosition, yPosition);
                 break;
             case 'both':
                 context.fillStyle = '#FF0000';
-                context.fillText(message, xPosition, yPosition);
+                context.fillText(appState.message, xPosition, yPosition);
                 context.strokeStyle = '#000000';
-                context.strokeText(message, xPosition, yPosition);
+                context.strokeText(appState.message, xPosition, yPosition);
                 break;
         }
     }
 
-    function textBoxChanged(event) {
-        var target = event.target;
+    function changeAppStateOnDOMEvent(property, elementId, eventName) {
+        function eventHandler(event) {
+            var target = event.target;
 
-        message = target.value;
-        drawScreen();
+            appState[property] = target.value;
+            drawScreen();
+        }
+        var element = document.getElementById(elementId);
+
+        element.addEventListener(eventName, eventHandler, false);
     }
 
-    function fillOrStrokeChanged(event) {
-        var target = event.target;
-
-        fillOrStroke = target.value;
-        drawScreen();
-    }
+    changeAppStateOnDOMEvent('message', 'textBox', 'keyup');
+    changeAppStateOnDOMEvent('fillOrStroke', 'fillOrStroke', 'change');
+    changeAppStateOnDOMEvent('fontStyle', 'fontStyle', 'change');
+    changeAppStateOnDOMEvent('fontWeight', 'fontWeight', 'change');
+    changeAppStateOnDOMEvent('fontFace', 'fontFace', 'change');
+    changeAppStateOnDOMEvent('textSize', 'textSize', 'change');
 
     drawScreen();
 }
