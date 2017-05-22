@@ -83,7 +83,7 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/>\n        </form>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>\n        Color: <input type="color" id="textColor"/><br>\n        </form>';
 
     appElement.innerHTML = appTemplate;
 
@@ -96,7 +96,8 @@ function canvasApp() {
         textSize: '50',
         fontFace: 'serif',
         fontWeight: 'normal',
-        fontStyle: 'normal'
+        fontStyle: 'normal',
+        textColor: '#ff0000'
     };
 
     function clearRect() {
@@ -128,15 +129,15 @@ function canvasApp() {
 
         switch (appState.fillOrStroke) {
             case 'fill':
-                context.fillStyle = '#FF0000';
+                context.fillStyle = appState.textColor;
                 context.fillText(appState.message, xPosition, yPosition);
                 break;
             case 'stroke':
-                context.strokeStyle = '#FF0000';
+                context.strokeStyle = appState.textColor;
                 context.strokeText(appState.message, xPosition, yPosition);
                 break;
             case 'both':
-                context.fillStyle = '#FF0000';
+                context.fillStyle = appState.textColor;
                 context.fillText(appState.message, xPosition, yPosition);
                 context.strokeStyle = '#000000';
                 context.strokeText(appState.message, xPosition, yPosition);
@@ -162,6 +163,7 @@ function canvasApp() {
     changeAppStateOnDOMEvent('fontWeight', 'fontWeight', 'change');
     changeAppStateOnDOMEvent('fontFace', 'fontFace', 'change');
     changeAppStateOnDOMEvent('textSize', 'textSize', 'change');
+    changeAppStateOnDOMEvent('textColor', 'textColor', 'change');
 
     drawScreen();
 }

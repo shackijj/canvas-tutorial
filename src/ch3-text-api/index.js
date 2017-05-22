@@ -34,7 +34,8 @@ export function canvasApp() {
             <option value="fantasy">fantasy</option>
             <option value="monospace">monospace</option>
         </select><br>
-        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/>
+        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>
+        Color: <input type="color" id="textColor"/><br>
         </form>`;
 
     appElement.innerHTML = appTemplate;
@@ -49,6 +50,7 @@ export function canvasApp() {
         fontFace: 'serif',
         fontWeight: 'normal',
         fontStyle: 'normal',
+        textColor: '#ff0000',
     };
 
     function clearRect() {
@@ -70,7 +72,6 @@ export function canvasApp() {
         context.strokeRect(10, 10, 480, 480);
 
         context.font = getFontString(appState);
-        console.log(getFontString(appState));
         const metrics = context.measureText(appState.message);
         const textWidth = metrics.width;
         const xPosition = (theCanvas.width / 2) - (textWidth / 2);
@@ -78,15 +79,15 @@ export function canvasApp() {
 
         switch(appState.fillOrStroke) {
             case 'fill':
-                context.fillStyle = '#FF0000';
+                context.fillStyle = appState.textColor;
                 context.fillText(appState.message, xPosition, yPosition);
                 break;
             case 'stroke':
-                context.strokeStyle = '#FF0000';
+                context.strokeStyle = appState.textColor;
                 context.strokeText(appState.message, xPosition, yPosition);
                 break;
             case 'both':
-                context.fillStyle = '#FF0000';
+                context.fillStyle = appState.textColor;
                 context.fillText(appState.message, xPosition, yPosition);
                 context.strokeStyle = '#000000';
                 context.strokeText(appState.message, xPosition, yPosition);
@@ -111,6 +112,7 @@ export function canvasApp() {
     changeAppStateOnDOMEvent('fontWeight', 'fontWeight', 'change');
     changeAppStateOnDOMEvent('fontFace', 'fontFace', 'change');
     changeAppStateOnDOMEvent('textSize', 'textSize', 'change');
+    changeAppStateOnDOMEvent('textColor', 'textColor', 'change');
 
     drawScreen();
 }
