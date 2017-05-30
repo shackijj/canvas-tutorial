@@ -1,4 +1,10 @@
 export function canvasApp() {
+    const patternImage = new Image();
+    patternImage.src = 'images/texture.jpg';
+    patternImage.onload = runApp;
+}
+
+function runApp() {
     if (!Modernizr.canvas) {
         return;
     }
@@ -9,6 +15,10 @@ export function canvasApp() {
         Your browser doesn't support HTML5 canvas.
         </canvas>
         <form>
+        Canvas width: <input id="canvasWidth" type="range" min="0" max="1000" step="1" value="500"/><br>
+        Canvas height: <input id="canvasHeight" type="range" min="0" max="1000" step="1" value="500"/><br>
+        Canvas style width: <input id="canvasStyleWidth" type="range" min="0" max="1000" step="1" value="500"/><br>
+        Canvas style height: <input id="canvasStyleHeight" type="range" min="0" max="1000" step="1" value="500"/><br>
         Text: <input type="text" id="textBox" placeholder="some text"/><br>
         Fill or stroke:
         <select id="fillOrStroke">
@@ -20,6 +30,7 @@ export function canvasApp() {
             <option value="none">None</option>
             <option value="linear">Linear Gradient</option>
             <option value="radial">Radial Gradient</option>
+            <option value="pattern">Pattern</option>
         </select><br>
         Font style: <select id="fontStyle">
             <option value="normal">normal</option>
@@ -53,6 +64,10 @@ export function canvasApp() {
 
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
+    const canvasStyleHeight = document.getElementById('canvasStyleHeight');
+    const canvasStyleWidth = document.getElementById('canvasStyleWidth');
+    const canvasHeight = document.getElementById('canvasHeight');
+    const canvasWidth = document.getElementById('canvasWidth');
 
     const appState = {
         message: 'some text',
@@ -68,8 +83,10 @@ export function canvasApp() {
         shadowY: 1,
         shadowBlur: 1,
         shadowColor: '#707070',
-        fillType: 'none'
+        fillType: 'none',
+        pattern: new Image(),
     };
+    appState.pattern.src = 'images/texture.jpg';
 
     function clearRect() {
         const { width, height } = theCanvas;
@@ -87,10 +104,10 @@ export function canvasApp() {
         context.globalAlpha = 1;
 
         context.fillStyle = 'gray';
-        context.fillRect(0, 0, 500, 500);
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
         context.strokeStyle = 'black';
-        context.strokeRect(10, 10, 480, 480);
+        context.strokeRect(10, 10, theCanvas.width - 20, theCanvas.height - 20);
 
         context.globalAlpha = appState.textAlpha;
 
@@ -121,6 +138,10 @@ export function canvasApp() {
                 radialGradient.addColorStop(0, appState.textColor1);
                 radialGradient.addColorStop(1, appState.textColor2);
                 textColor = radialGradient;
+                break;
+            case 'pattern':
+                const pattern = context.createPattern(appState.pattern, 'repeat');
+                textColor = pattern;
                 break;
         }
 
@@ -172,6 +193,32 @@ export function canvasApp() {
     changeAppStateOnDOMEvent('shadowColor', 'shadowColor', 'change');
 
     changeAppStateOnDOMEvent('fillType', 'fillType', 'change');
+
+    changeAppStateOnDOMEvent('canvasWidth', 'canvasWidth', 'change');
+    changeAppStateOnDOMEvent('canvasHeight', 'canvasHeight', 'change');
+
+    function canvasStyleChanged() {
+        const width = canvasStyleWidth.value;
+        const height = canvasStyleWidth.value;
+        theCanvas.setAttribute('style', `width:${width}px;height:${height}px`);
+        drawScreen();
+    }
+
+    canvasStyleWidth.addEventListener('change', canvasStyleChanged);
+    canvasStyleHeight.addEventListener('change', canvasStyleChanged);
+
+    function canvasWidthChanged() {
+        theCanvas.width = canvasWidth.value;
+        drawScreen();
+    }
+
+    function canvasHeightChanged() {
+        theCanvas.height = canvasHeight.value;
+        drawScreen();
+    }
+
+    canvasWidth.addEventListener('change', canvasWidthChanged);
+    canvasHeight.addEventListener('change', canvasHeightChanged);
 
     drawScreen();
 }

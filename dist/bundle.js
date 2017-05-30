@@ -78,17 +78,27 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.canvasApp = canvasApp;
 function canvasApp() {
+    var patternImage = new Image();
+    patternImage.src = 'images/texture.jpg';
+    patternImage.onload = runApp;
+}
+
+function runApp() {
     if (!Modernizr.canvas) {
         return;
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        <select id="fillType">\n            <option value="none">None</option>\n            <option value="linear">Linear Gradient</option>\n            <option value="radial">Radial Gradient</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>\n        Color 1: <input type="color" id="textColor1"/><br>\n        Color 2: <input type="color" id="textColor2"/><br>\n        TextAlpha: <input type="range" id="textAlpha" min="0.0" max="1.0" step="0.01" value="1.0"/><br>\n        shadowX: <input type="range" id="shadowX" min="-100" max="100" step="1" value="1"/><br>\n        shadowY: <input type="range" id="shadowY" min="-100" max="100" step="1" value="1"/><br>\n        shadowBlur: <input type="range" id="shadowBlur" min="0.0" max="1.0" step="0.01" value="1"/><br>\n        Color: <input type="color" id="shadowColor" value="#707070"/><br>\n        </form>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Canvas width: <input id="canvasWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas height: <input id="canvasHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style width: <input id="canvasStyleWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style height: <input id="canvasStyleHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        <select id="fillType">\n            <option value="none">None</option>\n            <option value="linear">Linear Gradient</option>\n            <option value="radial">Radial Gradient</option>\n            <option value="pattern">Pattern</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>\n        Color 1: <input type="color" id="textColor1"/><br>\n        Color 2: <input type="color" id="textColor2"/><br>\n        TextAlpha: <input type="range" id="textAlpha" min="0.0" max="1.0" step="0.01" value="1.0"/><br>\n        shadowX: <input type="range" id="shadowX" min="-100" max="100" step="1" value="1"/><br>\n        shadowY: <input type="range" id="shadowY" min="-100" max="100" step="1" value="1"/><br>\n        shadowBlur: <input type="range" id="shadowBlur" min="0.0" max="1.0" step="0.01" value="1"/><br>\n        Color: <input type="color" id="shadowColor" value="#707070"/><br>\n        </form>';
 
     appElement.innerHTML = appTemplate;
 
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
+    var canvasStyleHeight = document.getElementById('canvasStyleHeight');
+    var canvasStyleWidth = document.getElementById('canvasStyleWidth');
+    var canvasHeight = document.getElementById('canvasHeight');
+    var canvasWidth = document.getElementById('canvasWidth');
 
     var appState = {
         message: 'some text',
@@ -104,8 +114,10 @@ function canvasApp() {
         shadowY: 1,
         shadowBlur: 1,
         shadowColor: '#707070',
-        fillType: 'none'
+        fillType: 'none',
+        pattern: new Image()
     };
+    appState.pattern.src = 'images/texture.jpg';
 
     function clearRect() {
         var width = theCanvas.width,
@@ -125,10 +137,10 @@ function canvasApp() {
         context.globalAlpha = 1;
 
         context.fillStyle = 'gray';
-        context.fillRect(0, 0, 500, 500);
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
         context.strokeStyle = 'black';
-        context.strokeRect(10, 10, 480, 480);
+        context.strokeRect(10, 10, theCanvas.width - 20, theCanvas.height - 20);
 
         context.globalAlpha = appState.textAlpha;
 
@@ -159,6 +171,10 @@ function canvasApp() {
                 radialGradient.addColorStop(0, appState.textColor1);
                 radialGradient.addColorStop(1, appState.textColor2);
                 textColor = radialGradient;
+                break;
+            case 'pattern':
+                var pattern = context.createPattern(appState.pattern, 'repeat');
+                textColor = pattern;
                 break;
         }
 
@@ -211,6 +227,32 @@ function canvasApp() {
     changeAppStateOnDOMEvent('shadowColor', 'shadowColor', 'change');
 
     changeAppStateOnDOMEvent('fillType', 'fillType', 'change');
+
+    changeAppStateOnDOMEvent('canvasWidth', 'canvasWidth', 'change');
+    changeAppStateOnDOMEvent('canvasHeight', 'canvasHeight', 'change');
+
+    function canvasStyleChanged() {
+        var width = canvasStyleWidth.value;
+        var height = canvasStyleWidth.value;
+        theCanvas.setAttribute('style', 'width:' + width + 'px;height:' + height + 'px');
+        drawScreen();
+    }
+
+    canvasStyleWidth.addEventListener('change', canvasStyleChanged);
+    canvasStyleHeight.addEventListener('change', canvasStyleChanged);
+
+    function canvasWidthChanged() {
+        theCanvas.width = canvasWidth.value;
+        drawScreen();
+    }
+
+    function canvasHeightChanged() {
+        theCanvas.height = canvasHeight.value;
+        drawScreen();
+    }
+
+    canvasWidth.addEventListener('change', canvasWidthChanged);
+    canvasHeight.addEventListener('change', canvasHeightChanged);
 
     drawScreen();
 }
