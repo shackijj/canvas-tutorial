@@ -31,6 +31,7 @@ function runApp() {
             <option value="linear">Linear Gradient</option>
             <option value="radial">Radial Gradient</option>
             <option value="pattern">Pattern</option>
+            <option value="animation">animation</option>
         </select><br>
         Font style: <select id="fontStyle">
             <option value="normal">normal</option>
@@ -58,6 +59,8 @@ function runApp() {
         shadowY: <input type="range" id="shadowY" min="-100" max="100" step="1" value="1"/><br>
         shadowBlur: <input type="range" id="shadowBlur" min="0.0" max="1.0" step="0.01" value="1"/><br>
         Color: <input type="color" id="shadowColor" value="#707070"/><br>
+        <input type="button" id="createImageData" value="Create image data"/><br>
+        <textarea id="imageDataDisplay" rows=10 cols=30></textarea>
         </form>`;
 
     appElement.innerHTML = appTemplate;
@@ -86,6 +89,15 @@ function runApp() {
         fillType: 'none',
         pattern: new Image(),
     };
+
+    const colorStops = [
+        {color: '#ff0000', stopPercent: 0},
+        {color: '#ffff00', stopPercent: 0.125},
+        {color: '#00ff00', stopPercent: 0.375},
+        {color: '#0000ff', stopPercent: 0.625},
+        {color: '#ff00ff', stopPercent: 0.875},
+        {color: '#ff0000', stopPercent: 1},
+    ];
     appState.pattern.src = 'images/texture.jpg';
 
     function clearRect() {
@@ -143,6 +155,24 @@ function runApp() {
                 const pattern = context.createPattern(appState.pattern, 'repeat');
                 textColor = pattern;
                 break;
+            case 'animation':
+                const gradient = context.createLinearGradient(
+                    theCanvas.width/2,
+                    0,
+                    theCanvas.width/2,
+                    theCanvas.height);
+                for(let i = 0; i < colorStops.length; i++) {
+                    let { color, stopPercent } = colorStops[i];
+
+                    gradient.addColorStop(stopPercent, color);
+                    stopPercent += .015;
+                    if (stopPercent > 1) {
+                        stopPercent = 0;
+                    }
+                     colorStops[i].stopPercent = stopPercent;
+                }
+                textColor = gradient;
+                break;
         }
 
         const xPosition = (theCanvas.width / 2) - (textWidth / 2);
@@ -177,7 +207,6 @@ function runApp() {
         element.addEventListener(eventName, eventHandler, false);
     }
 
-    changeAppStateOnDOMEvent('message', 'textBox', 'keyup');
     changeAppStateOnDOMEvent('fillOrStroke', 'fillOrStroke', 'change');
     changeAppStateOnDOMEvent('fontStyle', 'fontStyle', 'change');
     changeAppStateOnDOMEvent('fontWeight', 'fontWeight', 'change');
@@ -196,6 +225,16 @@ function runApp() {
 
     changeAppStateOnDOMEvent('canvasWidth', 'canvasWidth', 'change');
     changeAppStateOnDOMEvent('canvasHeight', 'canvasHeight', 'change');
+
+    const createImageData = document.getElementById('createImageData');
+    const imageDataDisplay = document.getElementById('imageDataDisplay');
+    function createImageDataPressed(event) {
+        imageDataDisplay.value = theCanvas.toDataURL();
+        window.open(imageDataDisplay.value, 'canvasImage',
+            `left=0,top=0,width=${theCanvas.width},height=${theCanvas.height},toolbar=0,resizable=0`);
+    }
+    createImageData.addEventListener('click', createImageDataPressed, false);
+
 
     function canvasStyleChanged() {
         const width = canvasStyleWidth.value;
@@ -220,5 +259,24 @@ function runApp() {
     canvasWidth.addEventListener('change', canvasWidthChanged);
     canvasHeight.addEventListener('change', canvasHeightChanged);
 
-    drawScreen();
+
+    const textBox = document.getElementById('textBox');
+    textBox.addEventListener('keyup', onTextBoxKeyUp);
+
+    function onTextBoxKeyUp(event) {
+        appState.message = event.target.value;
+        /* setElementPath is current unsupported
+        theCanvas.innerHTML = `<span>${appState.message}</span>`;
+        const spanElement = theCanvas.firstChild;
+        context.setElementPath(spanElement);
+        */
+        drawScreen();
+    }
+
+    function gameLoop() {
+        setTimeout(gameLoop, 20);
+        drawScreen();
+    }
+
+    gameLoop();
 }

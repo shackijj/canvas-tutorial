@@ -89,7 +89,7 @@ function runApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Canvas width: <input id="canvasWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas height: <input id="canvasHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style width: <input id="canvasStyleWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style height: <input id="canvasStyleHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        <select id="fillType">\n            <option value="none">None</option>\n            <option value="linear">Linear Gradient</option>\n            <option value="radial">Radial Gradient</option>\n            <option value="pattern">Pattern</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>\n        Color 1: <input type="color" id="textColor1"/><br>\n        Color 2: <input type="color" id="textColor2"/><br>\n        TextAlpha: <input type="range" id="textAlpha" min="0.0" max="1.0" step="0.01" value="1.0"/><br>\n        shadowX: <input type="range" id="shadowX" min="-100" max="100" step="1" value="1"/><br>\n        shadowY: <input type="range" id="shadowY" min="-100" max="100" step="1" value="1"/><br>\n        shadowBlur: <input type="range" id="shadowBlur" min="0.0" max="1.0" step="0.01" value="1"/><br>\n        Color: <input type="color" id="shadowColor" value="#707070"/><br>\n        </form>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <form>\n        Canvas width: <input id="canvasWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas height: <input id="canvasHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style width: <input id="canvasStyleWidth" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Canvas style height: <input id="canvasStyleHeight" type="range" min="0" max="1000" step="1" value="500"/><br>\n        Text: <input type="text" id="textBox" placeholder="some text"/><br>\n        Fill or stroke:\n        <select id="fillOrStroke">\n            <option value="fill">fill</option>\n            <option value="stroke">stroke</option>\n            <option value="both">both</option>\n        </select><br>\n        <select id="fillType">\n            <option value="none">None</option>\n            <option value="linear">Linear Gradient</option>\n            <option value="radial">Radial Gradient</option>\n            <option value="pattern">Pattern</option>\n            <option value="animation">animation</option>\n        </select><br>\n        Font style: <select id="fontStyle">\n            <option value="normal">normal</option>\n            <option value="italic">italic</option>\n            <option value="oblique">oblique</option>\n        </select><br>\n        Font weight: <select id="fontWeight">\n            <option value="normal">normal</option>\n            <option value="bold">bold</option>\n            <option value="bolder">bolder</option>\n            <option value="lighter">lighter</option>\n        </select><br>\n        Font: <select id="fontFace">\n            <option value="serif">serif</option>\n            <option value="sans-serif">sans-serif</option>\n            <option value="cursive">cursive</option>\n            <option value="fantasy">fantasy</option>\n            <option value="monospace">monospace</option>\n        </select><br>\n        Font size: <input type="range" id="textSize" min="0" max="200" step="1" value="50"/><br>\n        Color 1: <input type="color" id="textColor1"/><br>\n        Color 2: <input type="color" id="textColor2"/><br>\n        TextAlpha: <input type="range" id="textAlpha" min="0.0" max="1.0" step="0.01" value="1.0"/><br>\n        shadowX: <input type="range" id="shadowX" min="-100" max="100" step="1" value="1"/><br>\n        shadowY: <input type="range" id="shadowY" min="-100" max="100" step="1" value="1"/><br>\n        shadowBlur: <input type="range" id="shadowBlur" min="0.0" max="1.0" step="0.01" value="1"/><br>\n        Color: <input type="color" id="shadowColor" value="#707070"/><br>\n        <input type="button" id="createImageData" value="Create image data"/><br>\n        <textarea id="imageDataDisplay" rows=10 cols=30></textarea>\n        </form>';
 
     appElement.innerHTML = appTemplate;
 
@@ -117,6 +117,8 @@ function runApp() {
         fillType: 'none',
         pattern: new Image()
     };
+
+    var colorStops = [{ color: '#ff0000', stopPercent: 0 }, { color: '#ffff00', stopPercent: 0.125 }, { color: '#00ff00', stopPercent: 0.375 }, { color: '#0000ff', stopPercent: 0.625 }, { color: '#ff00ff', stopPercent: 0.875 }, { color: '#ff0000', stopPercent: 1 }];
     appState.pattern.src = 'images/texture.jpg';
 
     function clearRect() {
@@ -176,6 +178,23 @@ function runApp() {
                 var pattern = context.createPattern(appState.pattern, 'repeat');
                 textColor = pattern;
                 break;
+            case 'animation':
+                var gradient = context.createLinearGradient(theCanvas.width / 2, 0, theCanvas.width / 2, theCanvas.height);
+                for (var i = 0; i < colorStops.length; i++) {
+                    var _colorStops$i = colorStops[i],
+                        color = _colorStops$i.color,
+                        stopPercent = _colorStops$i.stopPercent;
+
+
+                    gradient.addColorStop(stopPercent, color);
+                    stopPercent += .015;
+                    if (stopPercent > 1) {
+                        stopPercent = 0;
+                    }
+                    colorStops[i].stopPercent = stopPercent;
+                }
+                textColor = gradient;
+                break;
         }
 
         var xPosition = theCanvas.width / 2 - textWidth / 2;
@@ -211,7 +230,6 @@ function runApp() {
         element.addEventListener(eventName, eventHandler, false);
     }
 
-    changeAppStateOnDOMEvent('message', 'textBox', 'keyup');
     changeAppStateOnDOMEvent('fillOrStroke', 'fillOrStroke', 'change');
     changeAppStateOnDOMEvent('fontStyle', 'fontStyle', 'change');
     changeAppStateOnDOMEvent('fontWeight', 'fontWeight', 'change');
@@ -230,6 +248,14 @@ function runApp() {
 
     changeAppStateOnDOMEvent('canvasWidth', 'canvasWidth', 'change');
     changeAppStateOnDOMEvent('canvasHeight', 'canvasHeight', 'change');
+
+    var createImageData = document.getElementById('createImageData');
+    var imageDataDisplay = document.getElementById('imageDataDisplay');
+    function createImageDataPressed(event) {
+        imageDataDisplay.value = theCanvas.toDataURL();
+        window.open(imageDataDisplay.value, 'canvasImage', 'left=0,top=0,width=' + theCanvas.width + ',height=' + theCanvas.height + ',toolbar=0,resizable=0');
+    }
+    createImageData.addEventListener('click', createImageDataPressed, false);
 
     function canvasStyleChanged() {
         var width = canvasStyleWidth.value;
@@ -254,7 +280,25 @@ function runApp() {
     canvasWidth.addEventListener('change', canvasWidthChanged);
     canvasHeight.addEventListener('change', canvasHeightChanged);
 
-    drawScreen();
+    var textBox = document.getElementById('textBox');
+    textBox.addEventListener('keyup', onTextBoxKeyUp);
+
+    function onTextBoxKeyUp(event) {
+        appState.message = event.target.value;
+        /* setElementPath is current unsupported
+        theCanvas.innerHTML = `<span>${appState.message}</span>`;
+        const spanElement = theCanvas.firstChild;
+        context.setElementPath(spanElement);
+        */
+        drawScreen();
+    }
+
+    function gameLoop() {
+        setTimeout(gameLoop, 20);
+        drawScreen();
+    }
+
+    gameLoop();
 }
 
 /***/ }),
