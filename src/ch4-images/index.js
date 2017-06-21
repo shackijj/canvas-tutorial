@@ -16,12 +16,12 @@ export function canvasApp() {
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
 
-    var spaceShip = new Image();
-    spaceShip.addEventListener('load', eventShipLoaded, false);
-    spaceShip.src = 'images/space-ship.png';
+    var tileSheet = new Image();
+    tileSheet.addEventListener('load', eventShipLoaded, false);
+    tileSheet.src = 'images/ships.png';
 
     function eventShipLoaded() {
-        drawScreen();
+        startUp();
     }
 
     function placeShip(obj, posX, posY, width, height) {
@@ -32,13 +32,23 @@ export function canvasApp() {
         }
     }
 
+    var counter = 0;
+
     function drawScreen() {
+        counter ^= 1;
+
         context.fillStyle = '#aaaaaa';
         context.fillRect(0, 0, 500, 500);
 
-        context.drawImage(spaceShip, 0, 0);
-        context.drawImage(spaceShip, 0, 50, 32, 32);
+        context.drawImage(tileSheet, 32 * counter, 0, 32, 32, 50, 50, 64, 64);
     }
 
-    drawScreen();
+    function startUp() {
+        gameLoop();
+    }
+
+    function gameLoop() {
+        window.setTimeout(gameLoop, 100);
+        drawScreen();
+    }
 }
