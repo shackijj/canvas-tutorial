@@ -17,30 +17,46 @@ export function canvasApp() {
     const context = theCanvas.getContext("2d");
 
     var tileSheet = new Image();
-    tileSheet.addEventListener('load', eventShipLoaded, false);
-    tileSheet.src = 'images/ships.png';
+    tileSheet.addEventListener('load', eventSheetLoaded, false);
+    tileSheet.src = 'images/tanks-sheet.png';
 
-    function eventShipLoaded() {
+    function eventSheetLoaded() {
         startUp();
     }
 
-    function placeShip(obj, posX, posY, width, height) {
-        if (width && height) {
-            context.drawImage(obj, pox, posY, width, height);
-        } else {
-            context.drawImage(obj, posX, posY);
-        }
+    const animationFrames = [1, 2, 3, 4, 5, 6, 7, 8];
+    let frameIndex = 0;
+    let x = 50;
+    let y = 50;
+    const dx = 1;
+    const dy = 0;
+
+    function sampleFill() {
+        context.fillStyle = '#aaaaaa';
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
     }
 
-    var counter = 0;
-
     function drawScreen() {
-        counter ^= 1;
+        sampleFill();
+        context.save();
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.translate(x + 16, y + 16);
+        
+        let rotation = 90;
+        let angleInRadians = rotation * Math.PI / 180;
+        context.rotate(angleInRadians);
 
-        context.fillStyle = '#aaaaaa';
-        context.fillRect(0, 0, 500, 500);
-
-        context.drawImage(tileSheet, 32 * counter, 0, 32, 32, 50, 50, 64, 64);
+        frameIndex++;
+        if (frameIndex === animationFrames.length) {
+            frameIndex = 0;
+        }
+        x += dx;
+        y += dy;
+        // Math for source(X|Y) is based on a green tank placement
+        const sourceX = Math.floor(animationFrames[frameIndex] % 8) * 32;
+        const sourceY = Math.floor(animationFrames[frameIndex] / 8) * 32;
+        context.drawImage(tileSheet, sourceX, sourceY, 32, 32, -16, -16, 32, 32);
+        context.restore();
     }
 
     function startUp() {
