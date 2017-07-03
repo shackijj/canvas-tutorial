@@ -83,7 +83,7 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+    var appTemplate = '<canvas id="canvasOne" width="256" height="256" style="position: absolute; top: 50px; left: 50px">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
 
     appElement.innerHTML = appTemplate;
 
@@ -91,32 +91,60 @@ function canvasApp() {
     var context = theCanvas.getContext("2d");
 
     var tileSheet = new Image();
-    tileSheet.addEventListener('load', eventSheetLoaded, false);
+    tileSheet.addEventListener('load', startUp);
     tileSheet.src = 'images/tanks-sheet.png';
 
-    var mapRows = 10;
-    var mapCols = 10;
-    // It is taken from tanks.csv
-    var tileMap = [[31, 30, 30, 30, 0, 30, 30, 30, 30, 31], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [31, 0, 25, 0, 25, 0, 25, 0, 0, 31], [31, 25, 0, 0, 25, 0, 0, 25, 0, 31], [31, 0, 0, 0, 25, 25, 0, 25, 0, 31], [31, 0, 0, 25, 0, 0, 0, 25, 0, 31], [31, 0, 0, 0, 0, 0, 0, 25, 0, 31], [0, 0, 25, 0, 25, 0, 25, 0, 0, 0], [31, 0, 0, 0, 0, 0, 0, 0, 0, 31], [31, 30, 30, 30, 0, 30, 30, 30, 30, 31]];
+    var mouseX = void 0;
+    var mouseY = void 0;
+    var imageData = void 0;
 
-    function drawMap() {
-        for (var i = 0; i < mapRows; i++) {
-            for (var j = 0; j < mapCols; j++) {
-                var tileId = tileMap[i][j];
-                var sourceX = Math.floor(tileId % 8) * 32;
-                var sourceY = Math.floor(tileId / 8) * 32;
-                context.drawImage(tileSheet, sourceX, sourceY, 32, 32, j * 32, i * 32, 32, 32);
-            }
+    function onMouseMove(event) {
+        mouseX = event.clientX - theCanvas.offsetLeft;
+        mouseY = event.clientY - theCanvas.offsetTop;
+    }
+
+    function drawTileSheet() {
+        context.drawImage(tileSheet, 0, 0);
+    }
+
+    function highlightTile(tileId, x, y) {
+        context.fillStyle = '#aaaaaa';
+        context.fillRect(0, 0, 256, 128);
+        drawTileSheet();
+        imageData = context.getImageData(x, y, 32, 32);
+
+        // setting alpha
+        for (var j = 3; j < imageData.data.length; j += 4) {
+            imageData.data[j] = 128;
+        }
+
+        var startX = Math.floor(tileId % 8) * 32;
+        var startY = Math.floor(tileId / 8) * 32;
+        context.strokeStyle = 'red';
+        context.strokeRect(startX, startY, 32, 32);
+    }
+
+    function onMouseClick() {
+        if (mouseY < 128) {
+            var col = Math.floor(mouseX / 32);
+            var row = Math.floor(mouseY / 32);
+            var tileId = row * 7 + (col + row);
+            highlightTile(tileId, col * 32, row * 32);
+        } else {
+            var _col = Math.floor(mouseX / 32);
+            var _row = Math.floor(mouseY / 32);
+            context.putImageData(imageData, _col * 32, _row * 32);
         }
     }
 
-    function drawScreen() {
-        drawMap();
+    function startUp() {
+        context.fillStyle = '#aaaaaa';
+        context.fillRect(0, 0, 256, 256);
+        drawTileSheet();
     }
 
-    function eventSheetLoaded() {
-        drawScreen();
-    }
+    theCanvas.addEventListener('mousemove', onMouseMove, false);
+    theCanvas.addEventListener('click', onMouseClick, false);
 }
 
 /***/ }),
