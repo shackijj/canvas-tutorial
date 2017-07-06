@@ -83,68 +83,62 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="256" height="256" style="position: absolute; top: 50px; left: 50px">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+    var appTemplate = '<canvas id="canvasOne" width="256" height="256" style="display: block;">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
 
     appElement.innerHTML = appTemplate;
 
     var theCanvas = document.getElementById('canvasOne');
-    var context = theCanvas.getContext("2d");
+    var context = theCanvas1.getContext("2d");
 
-    var tileSheet = new Image();
-    tileSheet.addEventListener('load', startUp);
-    tileSheet.src = 'images/tanks-sheet.png';
+    var blueObject = {
+        x: 0,
+        y: 200,
+        dx: 2,
+        width: 48,
+        height: 48,
+        image: new Image()
+    };
+    blueObject.image.src = 'images/bluecross.png';
 
-    var mouseX = void 0;
-    var mouseY = void 0;
-    var imageData = void 0;
-
-    function onMouseMove(event) {
-        mouseX = event.clientX - theCanvas.offsetLeft;
-        mouseY = event.clientY - theCanvas.offsetTop;
-    }
-
-    function drawTileSheet() {
-        context.drawImage(tileSheet, 0, 0);
-    }
-
-    function highlightTile(tileId, x, y) {
-        context.fillStyle = '#aaaaaa';
-        context.fillRect(0, 0, 256, 128);
-        drawTileSheet();
-        imageData = context.getImageData(x, y, 32, 32);
-
-        // setting alpha
-        for (var j = 3; j < imageData.data.length; j += 4) {
-            imageData.data[j] = 128;
-        }
-
-        var startX = Math.floor(tileId % 8) * 32;
-        var startY = Math.floor(tileId / 8) * 32;
-        context.strokeStyle = 'red';
-        context.strokeRect(startX, startY, 32, 32);
-    }
-
-    function onMouseClick() {
-        if (mouseY < 128) {
-            var col = Math.floor(mouseX / 32);
-            var row = Math.floor(mouseY / 32);
-            var tileId = row * 7 + (col + row);
-            highlightTile(tileId, col * 32, row * 32);
-        } else {
-            var _col = Math.floor(mouseX / 32);
-            var _row = Math.floor(mouseY / 32);
-            context.putImageData(imageData, _col * 32, _row * 32);
-        }
-    }
+    var redObject = {
+        x: 348,
+        y: 200,
+        dx: -2,
+        width: 48,
+        height: 48,
+        image: new Image()
+    };
+    redObject.image.src = 'images/redcircle.png';
 
     function startUp() {
-        context.fillStyle = '#aaaaaa';
-        context.fillRect(0, 0, 256, 256);
-        drawTileSheet();
+        context1.drawImage(tileSheet, 0, 0);
+        context2.drawImage(theCanvas1, 32, 0, 32, 32, 0, 0, 32, 32);
     }
 
-    theCanvas.addEventListener('mousemove', onMouseMove, false);
-    theCanvas.addEventListener('click', onMouseClick, false);
+    function boundingBoxCollide(object1, object2) {
+        var left1 = object1.x,
+            top1 = object1.y,
+            width1 = object1.width,
+            height1 = object1.height;
+        var left2 = object1.x,
+            top2 = object1.y,
+            width2 = object1.width,
+            height2 = object1.height;
+
+
+        var right1 = left1 + width1;
+        var bottom1 = top1 + height1;
+
+        var right2 = left2 + width2;
+        var bottom2 = top2 + height2;
+
+        if (bottom1 < top2) return false;
+        if (bottom2 < top1) return false;
+        if (right1 < left2) return false;
+        if (right2 < left1) return false;
+
+        return true;
+    }
 }
 
 /***/ }),
