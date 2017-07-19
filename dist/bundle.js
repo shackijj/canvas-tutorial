@@ -90,12 +90,32 @@ function canvasApp() {
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
 
+    var pointImage = new Image();
+    pointImage.src = 'images/point.png';
+    var points = [];
+
     var speed = 5;
-    var y = 10;
-    var x = 250;
+    var p1 = { x: 0, y: 0 };
+    var p2 = { x: 480, y: 480 };
+    var dx = p2.x - p1.x;
+    var dy = p2.y - p1.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    var moves = distance / speed;
+    var xunits = dx / moves;
+    var yunits = dy / moves;
+    var ball = { x: p1.x, y: p1.y };
+
+    function drawPoint(point) {
+        context.drawImage(pointImage, point.x, point.y, 1, 1);
+    }
 
     function drawScreen() {
-        y += speed;
+        if (moves > 0) {
+            moves--;
+            points.push({ x: ball.x, y: ball.y });
+            ball.x += xunits;
+            ball.y += yunits;
+        }
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
@@ -104,9 +124,11 @@ function canvasApp() {
 
         context.fillStyle = '#000000';
         context.beginPath();
-        context.arc(x, y, 15, 0, Math.PI * 2, true);
+        context.arc(ball.x, ball.y, 15, 0, Math.PI * 2, true);
         context.closePath();
         context.fill();
+
+        points.forEach(drawPoint);
     }
 
     function gameLoop() {

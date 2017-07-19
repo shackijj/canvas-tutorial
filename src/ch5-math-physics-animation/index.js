@@ -16,12 +16,33 @@ export function canvasApp() {
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
 
-    let speed = 5;
-    let y = 10;
-    let x = 250;
+
+    const pointImage = new Image();
+    pointImage.src = 'images/point.png';
+    const points = [];
+
+    const speed = 5;
+    const p1 = {x: 0, y: 0};
+    const p2 = {x: 480, y: 480};
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    let moves = distance / speed;
+    const xunits = dx / moves;
+    const yunits = dy / moves;
+    const ball = {x: p1.x, y: p1.y};
+
+    function drawPoint(point) {
+        context.drawImage(pointImage, point.x, point.y, 1, 1);
+    }
 
     function drawScreen() {
-        y += speed;
+        if (moves > 0) {
+            moves--;
+            points.push({x:ball.x,y:ball.y});
+            ball.x += xunits;
+            ball.y += yunits;
+        }
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
@@ -30,9 +51,11 @@ export function canvasApp() {
 
         context.fillStyle = '#000000';
         context.beginPath();
-        context.arc(x, y, 15, 0, Math.PI*2, true);
+        context.arc(ball.x, ball.y, 15, 0, Math.PI*2, true);
         context.closePath();
         context.fill();
+
+        points.forEach(drawPoint);
     }
 
     function gameLoop() {
