@@ -22,11 +22,14 @@ export function canvasApp() {
     const points = [];
 
     const speed = 5;
-    let angle = 45;
-    let radians = angle * Math.PI / 180;
-    const xunits = Math.cos(radians) * speed;
-    const yunits = Math.sin(radians) * speed;
-    const p1 = {x: 20, y: 20};
+    const p1 = {x: 0, y: 0};
+    const p2 = {x: 480, y: 480};
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    let moves = distance / speed;
+    const xunits = dx / moves;
+    const yunits = dy / moves;
     const ball = {x: p1.x, y: p1.y};
 
     function drawPoint(point) {
@@ -34,8 +37,12 @@ export function canvasApp() {
     }
 
     function drawScreen() {
-        ball.x += xunits;
-        ball.y += yunits;
+        if (moves > 0) {
+            moves--;
+            points.push({x:ball.x,y:ball.y});
+            ball.x += xunits;
+            ball.y += yunits;
+        }
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
@@ -48,7 +55,6 @@ export function canvasApp() {
         context.closePath();
         context.fill();
 
-        points.push({x:ball.x,y:ball.y});
         points.forEach(drawPoint);
     }
 

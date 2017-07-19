@@ -95,14 +95,11 @@ function canvasApp() {
     var points = [];
 
     var speed = 5;
-    var p1 = { x: 0, y: 0 };
-    var p2 = { x: 480, y: 480 };
-    var dx = p2.x - p1.x;
-    var dy = p2.y - p1.y;
-    var distance = Math.sqrt(dx * dx + dy * dy);
-    var moves = distance / speed;
-    var xunits = dx / moves;
-    var yunits = dy / moves;
+    var angle = 45;
+    var radians = angle * Math.PI / 180;
+    var xunits = Math.cos(radians) * speed;
+    var yunits = Math.sin(radians) * speed;
+    var p1 = { x: 20, y: 20 };
     var ball = { x: p1.x, y: p1.y };
 
     function drawPoint(point) {
@@ -110,12 +107,8 @@ function canvasApp() {
     }
 
     function drawScreen() {
-        if (moves > 0) {
-            moves--;
-            points.push({ x: ball.x, y: ball.y });
-            ball.x += xunits;
-            ball.y += yunits;
-        }
+        ball.x += xunits;
+        ball.y += yunits;
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
@@ -128,6 +121,7 @@ function canvasApp() {
         context.closePath();
         context.fill();
 
+        points.push({ x: ball.x, y: ball.y });
         points.forEach(drawPoint);
     }
 
