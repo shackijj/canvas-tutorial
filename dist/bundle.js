@@ -83,12 +83,12 @@ function canvasApp() {
     }
 
     var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="256" height="256" style="display: block;">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+    var appTemplate = '<canvas id="canvasOne" width="500" height="500" style="display: block;">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
 
     appElement.innerHTML = appTemplate;
 
     var theCanvas = document.getElementById('canvasOne');
-    var context = theCanvas1.getContext("2d");
+    var context = theCanvas.getContext("2d");
 
     var blueObject = {
         x: 0,
@@ -110,20 +110,15 @@ function canvasApp() {
     };
     redObject.image.src = 'images/redcircle.png';
 
-    function startUp() {
-        context1.drawImage(tileSheet, 0, 0);
-        context2.drawImage(theCanvas1, 32, 0, 32, 32, 0, 0, 32, 32);
-    }
-
     function boundingBoxCollide(object1, object2) {
         var left1 = object1.x,
             top1 = object1.y,
             width1 = object1.width,
             height1 = object1.height;
-        var left2 = object1.x,
-            top2 = object1.y,
-            width2 = object1.width,
-            height2 = object1.height;
+        var left2 = object2.x,
+            top2 = object2.y,
+            width2 = object2.width,
+            height2 = object2.height;
 
 
         var right1 = left1 + width1;
@@ -136,9 +131,58 @@ function canvasApp() {
         if (bottom2 < top1) return false;
         if (right1 < left2) return false;
         if (right2 < left1) return false;
-
         return true;
     }
+
+    function isIntersected() {
+        var xMin = Math.max(blueObject.x, redObject.x);
+        var yMin = Math.max(blueObject.y, redObject.y);
+        var xMax = Math.max(blueObject.x + blueObject.width, redObject.x + redObject.width);
+        var yMax = Math.max(blueObject.y + blueObject.height, redObject.y + redObject.height);
+
+        for (var pixelX = xMin; pixelX < xMax; pixelX++) {
+            for (var pixelY = yMin; pixelY < yMax; pixelY++) {
+                var bluepixel = (pixelX - blueObject.x + (pixelY - blueObject.y) * blueObject.width) * 4 + 3;
+                var redpixel = (pixelX - redObject.x + (pixelY - redObject.y) * redObject.width) * 4 + 3;
+                if (blueObject.imageData.data[bluepixel] !== 0 && redObject.imageData.data[redpixel] !== 0) {
+                    console.log('pixel collision');
+                    blueObject.dx = 0;
+                    redObject.dx = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    function drawScreen() {
+        blueObject.x += blueObject.dx;
+        redObject.x += redObject.dx;
+        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+        context.drawImage(blueObject.image, blueObject.x, blueObject.y);
+        context.drawImage(redObject.image, redObject.x, redObject.y);
+        if (boundingBoxCollide(blueObject, redObject)) {
+            console.log('box collision');
+            isIntersected();
+        }
+    }
+
+    function gameLoop() {
+        window.setTimeout(gameLoop, 100);
+        drawScreen();
+    }
+
+    function startUp() {
+        context.drawImage(blueObject.image, 0, 0);
+        blueObject.imageData = context.getImageData(0, 0, blueObject.width, blueObject.height);
+        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+
+        context.drawImage(redObject.image, 0, 0);
+        redObject.imageData = context.getImageData(0, 0, redObject.width, redObject.height);
+        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+        gameLoop();
+    }
+
+    setTimeout(startUp, 1000);
 }
 
 /***/ }),
