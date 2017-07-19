@@ -90,99 +90,31 @@ function canvasApp() {
     var theCanvas = document.getElementById('canvasOne');
     var context = theCanvas.getContext("2d");
 
-    var blueObject = {
-        x: 0,
-        y: 200,
-        dx: 2,
-        width: 48,
-        height: 48,
-        image: new Image()
-    };
-    blueObject.image.src = 'images/bluecross.png';
-
-    var redObject = {
-        x: 348,
-        y: 200,
-        dx: -2,
-        width: 48,
-        height: 48,
-        image: new Image()
-    };
-    redObject.image.src = 'images/redcircle.png';
-
-    function boundingBoxCollide(object1, object2) {
-        var left1 = object1.x,
-            top1 = object1.y,
-            width1 = object1.width,
-            height1 = object1.height;
-        var left2 = object2.x,
-            top2 = object2.y,
-            width2 = object2.width,
-            height2 = object2.height;
-
-
-        var right1 = left1 + width1;
-        var bottom1 = top1 + height1;
-
-        var right2 = left2 + width2;
-        var bottom2 = top2 + height2;
-
-        if (bottom1 < top2) return false;
-        if (bottom2 < top1) return false;
-        if (right1 < left2) return false;
-        if (right2 < left1) return false;
-        return true;
-    }
-
-    function isIntersected() {
-        var xMin = Math.max(blueObject.x, redObject.x);
-        var yMin = Math.max(blueObject.y, redObject.y);
-        var xMax = Math.max(blueObject.x + blueObject.width, redObject.x + redObject.width);
-        var yMax = Math.max(blueObject.y + blueObject.height, redObject.y + redObject.height);
-
-        for (var pixelX = xMin; pixelX < xMax; pixelX++) {
-            for (var pixelY = yMin; pixelY < yMax; pixelY++) {
-                var bluepixel = (pixelX - blueObject.x + (pixelY - blueObject.y) * blueObject.width) * 4 + 3;
-                var redpixel = (pixelX - redObject.x + (pixelY - redObject.y) * redObject.width) * 4 + 3;
-                if (blueObject.imageData.data[bluepixel] !== 0 && redObject.imageData.data[redpixel] !== 0) {
-                    console.log('pixel collision');
-                    blueObject.dx = 0;
-                    redObject.dx = 0;
-                    break;
-                }
-            }
-        }
-    }
+    var speed = 5;
+    var y = 10;
+    var x = 250;
 
     function drawScreen() {
-        blueObject.x += blueObject.dx;
-        redObject.x += redObject.dx;
-        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-        context.drawImage(blueObject.image, blueObject.x, blueObject.y);
-        context.drawImage(redObject.image, redObject.x, redObject.y);
-        if (boundingBoxCollide(blueObject, redObject)) {
-            console.log('box collision');
-            isIntersected();
-        }
+        y += speed;
+        context.fillStyle = '#EEEEEE';
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
+
+        context.strokeStyle = '#000000';
+        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+
+        context.fillStyle = '#000000';
+        context.beginPath();
+        context.arc(x, y, 15, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fill();
     }
 
     function gameLoop() {
-        window.setTimeout(gameLoop, 100);
         drawScreen();
+        window.requestAnimationFrame(gameLoop);
     }
 
-    function startUp() {
-        context.drawImage(blueObject.image, 0, 0);
-        blueObject.imageData = context.getImageData(0, 0, blueObject.width, blueObject.height);
-        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-
-        context.drawImage(redObject.image, 0, 0);
-        redObject.imageData = context.getImageData(0, 0, redObject.width, redObject.height);
-        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-        gameLoop();
-    }
-
-    setTimeout(startUp, 1000);
+    window.requestAnimationFrame(gameLoop);
 }
 
 /***/ }),
@@ -192,9 +124,9 @@ function canvasApp() {
 "use strict";
 
 
-var _ch4Images = __webpack_require__(0);
+var _ch5MathPhysicsAnimation = __webpack_require__(0);
 
-window.addEventListener('load', _ch4Images.canvasApp);
+window.addEventListener('load', _ch5MathPhysicsAnimation.canvasApp);
 
 /***/ })
 /******/ ]);

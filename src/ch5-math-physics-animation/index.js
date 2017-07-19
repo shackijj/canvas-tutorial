@@ -15,4 +15,30 @@ export function canvasApp() {
 
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
+
+    let speed = 5;
+    let y = 10;
+    let x = 250;
+
+    function drawScreen() {
+        y += speed;
+        context.fillStyle = '#EEEEEE';
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
+
+        context.strokeStyle = '#000000';
+        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+
+        context.fillStyle = '#000000';
+        context.beginPath();
+        context.arc(x, y, 15, 0, Math.PI*2, true);
+        context.closePath();
+        context.fill();
+    }
+
+    function gameLoop() {
+        drawScreen();
+        window.requestAnimationFrame(gameLoop);
+    }
+
+    window.requestAnimationFrame(gameLoop);
 }
