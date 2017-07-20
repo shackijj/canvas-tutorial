@@ -92,37 +92,79 @@ function canvasApp() {
 
     var pointImage = new Image();
     pointImage.src = 'images/point.png';
-    var points = [];
+    var balls = [];
 
-    var speed = 5;
-    var angle = 45;
-    var radians = angle * Math.PI / 180;
-    var xunits = Math.cos(radians) * speed;
-    var yunits = Math.sin(radians) * speed;
-    var p1 = { x: 20, y: 20 };
-    var ball = { x: p1.x, y: p1.y };
+    var numBalls = 100;
+    var maxSize = 8;
+    var minSize = 5;
+    var maxSpeed = minSize + 5;
+
+    var tempBall = void 0;
+    var tempX = void 0;
+    var tempY = void 0;
+    var tempSpeed = void 0;
+    var tempAngle = void 0;
+    var tempRadius = void 0;
+    var tempRadians = void 0;
+    var tempXUnits = void 0;
+    var tempYUnits = void 0;
+
+    for (var i = 0; i < numBalls; i++) {
+        tempRadius = maxSize - Math.random() * (maxSize - minSize);
+
+        tempX = Math.floor(Math.random() * theCanvas.width);
+        tempY = Math.floor(Math.random() * theCanvas.height);
+        tempSpeed = maxSpeed - tempRadius;
+        tempAngle = Math.floor(360 * Math.random());
+        tempRadians = tempAngle * Math.PI / 180;
+        tempXUnits = Math.cos(tempRadians) * tempSpeed;
+        tempYUnits = Math.sin(tempRadians) * tempSpeed;
+        tempBall = {
+            speed: tempSpeed,
+            angle: tempAngle,
+            xunits: tempXUnits,
+            yunits: tempYUnits,
+            radius: tempRadius,
+            x: tempX,
+            y: tempY
+        };
+        balls.push(tempBall);
+    }
+
+    function updateBall(ball) {
+        var radians = ball.angle * Math.PI / 180;
+        ball.xunits = Math.cos(radians) * ball.speed;
+        ball.yunits = Math.sin(radians) * ball.speed;
+    }
 
     function drawPoint(point) {
         context.drawImage(pointImage, point.x, point.y, 1, 1);
     }
 
     function drawScreen() {
-        ball.x += xunits;
-        ball.y += yunits;
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
         context.strokeStyle = '#000000';
         context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
 
-        context.fillStyle = '#000000';
-        context.beginPath();
-        context.arc(ball.x, ball.y, 15, 0, Math.PI * 2, true);
-        context.closePath();
-        context.fill();
+        balls.forEach(function (ball) {
+            ball.x += ball.xunits;
+            ball.y += ball.yunits;
+            context.fillStyle = '#000000';
+            context.beginPath();
+            context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
 
-        points.push({ x: ball.x, y: ball.y });
-        points.forEach(drawPoint);
+            if (ball.x > theCanvas.width || ball.x < 0) {
+                ball.angle = 180 - ball.angle;
+                updateBall(ball);
+            } else if (ball.y > theCanvas.height || ball.y < 0) {
+                ball.angle = 360 - ball.angle;
+                updateBall(ball);
+            }
+        });
     }
 
     function gameLoop() {
