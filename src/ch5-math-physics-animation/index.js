@@ -7,7 +7,11 @@ export function canvasApp() {
     const appTemplate = 
         `<canvas id="canvasOne" width="500" height="500" style="display: block;">
         Your browser doesn't support HTML5 canvas.
-        </canvas>`;
+        </canvas>
+        <form>
+        Canvas Width: <input type="range" id="canvasWidth" min="0" max="1000" step="1" value="500"/>
+        Canvas Height: <input type="range" id="canvasHeight" min="0" max="1000" step="1" value="500"/>
+        </form>`;
 
     appElement.innerHTML = appTemplate;
 
@@ -15,13 +19,15 @@ export function canvasApp() {
 
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
+    const canvasWidthInput = document.getElementById('canvasWidth');
+    const canvasHeightInput = document.getElementById('canvasHeight');
 
 
     const pointImage = new Image();
     pointImage.src = 'images/point.png';
     const balls = [];
 
-    const numBalls = 100;
+    const numBalls = 500;
     const maxSize = 8;
     const minSize = 5;
     const maxSpeed = minSize + 5;
@@ -99,5 +105,20 @@ export function canvasApp() {
         window.requestAnimationFrame(gameLoop);
     }
 
+    function canvasWidthChanged(e) {
+        console.log('x');
+        const target = e.target;
+        theCanvas.width = target.value;
+        drawScreen();
+    }
+
+    function canvasHeightChanged(e) {
+        const target = e.target;
+        theCanvas.height = target.value;
+        drawScreen();
+    }
+
+    canvasWidthInput.addEventListener('change', canvasWidthChanged, false);
+    canvasHeightInput.addEventListener('change', canvasHeightChanged, false);
     window.requestAnimationFrame(gameLoop);
 }
