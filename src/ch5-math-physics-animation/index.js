@@ -39,28 +39,55 @@ export function canvasApp() {
     let tempAngle;
     let tempRadius;
     let tempRadians;
-    let tempXUnits;
-    let tempYUnits;
+    let tempVelocityX;
+    let tempVelocityY;
+
+    function hitTestCircle(ball1, ball2) {
+        let retval = false;
+        const dx = ball1.nextX - ball2.nextX;
+        const dy = ball1.nextY - ball2.nextY;
+        const distance = (dx * dx + dy * dy);
+        if (distance <= ball1.radius + ball2.radius) {
+            retval = true;
+        }
+        return retval;
+    }
+
+    function canStartHere(ball) {
+        let retval = true;
+        balls.forEach(balls, function(ball) {
+            if (hitTestCircle(ball, balls[i])) {
+                retval = false;
+            }
+        });
+        return retval;
+    }
 
     for (let i = 0; i < numBalls; i++) {
-        tempRadius = maxSize - Math.random() * (maxSize - minSize);
-
-        tempX = Math.floor(Math.random() * theCanvas.width);
-        tempY = Math.floor(Math.random() * theCanvas.height);
-        tempSpeed = maxSpeed - tempRadius;
-        tempAngle = Math.floor(360 * Math.random());
-        tempRadians = tempAngle * Math.PI / 180;
-        tempXUnits = Math.cos(tempRadians) * tempSpeed;
-        tempYUnits = Math.sin(tempRadians) * tempSpeed;
-        tempBall = {
-            speed: tempSpeed,
-            angle: tempAngle, 
-            xunits: tempXUnits,
-            yunits: tempYUnits,
-            radius: tempRadius,
-            x: tempX,
-            y: tempY,
-        };
+        tempRadius = 5;
+        let placeOK = false;
+        while (!placeOK) {
+            tempX = Math.floor(Math.random() * theCanvas.width);
+            tempY = Math.floor(Math.random() * theCanvas.height);
+            tempSpeed = 4;
+            tempAngle = Math.floor(360 * Math.random());
+            tempRadians = tempAngle * Math.PI / 180;
+            tempVelocityX = Math.cos(tempRadians) * tempSpeed;
+            tempVelocityY = Math.sin(tempRadians) * tempSpeed;
+            tempBall = {
+                speed: tempSpeed,
+                angle: tempAngle, 
+                velocityX: tempVelocityY,
+                velocitY: tempVelocityX,
+                radius: tempRadius,
+                x: tempX,
+                y: tempY,
+                nextX: tempX,
+                nextY: tempY,
+                mass: tempRadius,
+            };
+            placeOK = canStartHere(tempBall);
+        }
         balls.push(tempBall);
     }
 
