@@ -53,10 +53,10 @@ export function canvasApp() {
         return retval;
     }
 
-    function canStartHere(ball) {
+    function canStartHere(testBall) {
         let retval = true;
-        balls.forEach(balls, function(ball) {
-            if (hitTestCircle(ball, balls[i])) {
+        balls.forEach(function(ball) {
+            if (hitTestCircle(testBall, ball)) {
                 retval = false;
             }
         });
@@ -78,7 +78,7 @@ export function canvasApp() {
                 speed: tempSpeed,
                 angle: tempAngle, 
                 velocityX: tempVelocityY,
-                velocitY: tempVelocityX,
+                velocityY: tempVelocityX,
                 radius: tempRadius,
                 x: tempX,
                 y: tempY,
@@ -91,40 +91,106 @@ export function canvasApp() {
         balls.push(tempBall);
     }
 
-    function updateBall(ball) {
-        const radians = ball.angle * Math.PI / 180;
-        ball.xunits = Math.cos(radians) * ball.speed;
-        ball.yunits = Math.sin(radians) * ball.speed;
+    function update() {
+        balls.forEach(function(ball) {
+            ball.nextX = (ball.x += ball.velocityX);
+            ball.nextX = (ball.y += ball.velocityY);
+        });
     }
 
-    function drawPoint(point) {
-        context.drawImage(pointImage, point.x, point.y, 1, 1);
+
+    function testWalls() {
+        balls.forEach(function(ball) {
+            if (ball.nextX + ball.radius > theCanvas.width) {
+                ball.velocityX *= -1;
+                ball.nextX = theCanvas.width - ball.radius;
+            } else if (ball.nextY - ball.radius < 0) {
+                ball.velocityY *= -1
+                ball.nextY = ball.radius;
+            } else if (ball.nextX - ball.radius < 0) {
+                ball.velocityX *= -1;
+                ball.nextX = ball.radius;
+            } else if (ball.nextY + ball.radius > theCanvas.height)  {
+                ball.velocitY *= -1;
+                ball.nextY = theCanvas.height - ball.radius;
+            }
+        });
+    }
+
+    function collideBalls(ball1, ball2) {
+        const dx = ball1.nextX - ball2.nextX;
+        const dy = ball2.nextY - ball2.nextY;
+        const collisionAngle = Math.atan2(dy, dx);
+        const speed1 = Math.sqrt(
+            ball1.velocityX * ball1.velocityX + ball1.velocitY * ball1.velocityY);
+        const speed2 = Math.sqrt(
+            ball2.velocityX * ball2.velocityX + ball2.velocitY * ball2.velocityY);
+        const direction1 = Math.atan2(ball1.velocitY, ball1.velocityX);
+        const direction2 = Math.atan2(ball2.velocitY, ball2.velocityX);
+
+        const velocityX1 = speed1 * Math.cos(direction1 - collisionAngle);
+        const velocityY1 = speed1 * Math.sin(direction1 - collisionAngle);
+        const velocityX2 = speed2 * Math.cos(direction2 - collisionAngle);
+        const velocityY2 = speed2 * Math.sin(direction2 - collisionAngle);
+
+        const finalVelocityX1 = ((ball1.mass - ball2.mass) * velocityX1 + 2 * ball2.mass * velocityX2)
+            / ball1.mass + ball2.mass;
+        
+        const finalVelocityX2 = ((ball2.mass - ball1.mass) * velocityX2 + 2 * ball1.mass * velocityX1)
+            / ball1.mass + ball2.mass;
+
+        const finalVelocityY1 = velocityY1;
+        const finalVelocityY2 = velocityY2;
+
+        ball1.velocityX = Math.cos(collisionAngle) * finalVelocityX1 + 
+            Math.cos(collisionAngle + Math.PI / 2) * finalVelocityY1;
+        ball1.velocityY = Math.sin(collisionAngle) * finalVelocityX1 +
+            Math.sin(collisionAngle + Math.PI / 2) * finalVelocityY1;
+
+        ball2.velocityX = Math.cos(collisionAngle) * finalVelocityX2 +
+            Math.cos(collisionAngle + Math.PI / 2) * finalVelocityY2;
+
+        ball2.velocityY = Math.sin(collisionAngle) * finalVelocityX2 +
+            Math.sin(collisionAngle + Math.PI / 2) * finalVelocityY2;
+        
+        ball1.nextX = (ball1.nextX += ball1.velocityX);
+        ball1.nextY = (ball1.nextY += ball1.velocityY);
+        ball2.nextX = (ball2.nextX += ball2.velocityX);
+        ball2.nextY = (ball2.nextY += ball2.velocityY);
+    }
+
+    function collide() {
+        balls.forEach(function(testBall) {
+            balls.forEach(function(ball) {
+                if (testBall !== ball && hitTestCircle(ball, testBall)) {
+                    collideBalls(ball, testBall);
+                }
+            });
+        });
+    }
+
+    function render() {
+        context.fillStyle = '#000000';
+        balls.forEach(function(ball) {
+            ball.x = ball.nextX;
+            ball.y = ball.nextY;
+            context.beginPath();
+            context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
+        });
     }
 
     function drawScreen() {
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
-
+        //Box
         context.strokeStyle = '#000000';
-        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
-
-        balls.forEach((ball) => {
-            ball.x += ball.xunits;
-            ball.y += ball.yunits;
-                    context.fillStyle = '#000000';
-            context.beginPath();
-            context.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2, true);
-            context.closePath();
-            context.fill();
-            
-            if (ball.x > theCanvas.width || ball.x < 0) {
-                ball.angle = 180 - ball.angle;
-                updateBall(ball);
-            } else if (ball.y > theCanvas.height || ball.y < 0) {
-                ball.angle = 360 - ball.angle;
-                updateBall(ball);
-            }
-        });
+        context.strokeRect(1, 1, theCanvas.width-2, theCanvas.height-2) 
+        update();
+        testWalls();
+        collide();
+        render();
     }
 
     function gameLoop() {
@@ -133,7 +199,6 @@ export function canvasApp() {
     }
 
     function canvasWidthChanged(e) {
-        console.log('x');
         const target = e.target;
         theCanvas.width = target.value;
         drawScreen();
