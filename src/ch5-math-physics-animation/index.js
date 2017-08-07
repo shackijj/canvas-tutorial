@@ -27,7 +27,7 @@ export function canvasApp() {
     pointImage.src = 'images/point.png';
     const balls = [];
 
-    const numBalls = 500;
+    const numBalls = 100;
     const maxSize = 8;
     const minSize = 5;
     const maxSpeed = minSize + 5;
@@ -46,8 +46,8 @@ export function canvasApp() {
         let retval = false;
         const dx = ball1.nextX - ball2.nextX;
         const dy = ball1.nextY - ball2.nextY;
-        const distance = (dx * dx + dy * dy);
-        if (distance <= ball1.radius + ball2.radius) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= (ball1.radius + ball2.radius)) {
             retval = true;
         }
         return retval;
@@ -94,7 +94,7 @@ export function canvasApp() {
     function update() {
         balls.forEach(function(ball) {
             ball.nextX = (ball.x += ball.velocityX);
-            ball.nextX = (ball.y += ball.velocityY);
+            ball.nextY = (ball.y += ball.velocityY);
         });
     }
 
@@ -111,7 +111,7 @@ export function canvasApp() {
                 ball.velocityX *= -1;
                 ball.nextX = ball.radius;
             } else if (ball.nextY + ball.radius > theCanvas.height)  {
-                ball.velocitY *= -1;
+                ball.velocityY *= -1;
                 ball.nextY = theCanvas.height - ball.radius;
             }
         });
@@ -119,31 +119,35 @@ export function canvasApp() {
 
     function collideBalls(ball1, ball2) {
         const dx = ball1.nextX - ball2.nextX;
-        const dy = ball2.nextY - ball2.nextY;
+        const dy = ball1.nextY - ball2.nextY;
+
         const collisionAngle = Math.atan2(dy, dx);
+
         const speed1 = Math.sqrt(
-            ball1.velocityX * ball1.velocityX + ball1.velocitY * ball1.velocityY);
+            ball1.velocityX * ball1.velocityX + ball1.velocityY * ball1.velocityY);
         const speed2 = Math.sqrt(
-            ball2.velocityX * ball2.velocityX + ball2.velocitY * ball2.velocityY);
-        const direction1 = Math.atan2(ball1.velocitY, ball1.velocityX);
-        const direction2 = Math.atan2(ball2.velocitY, ball2.velocityX);
+            ball2.velocityX * ball2.velocityX + ball2.velocityY * ball2.velocityY);
+
+        const direction1 = Math.atan2(ball1.velocityY, ball1.velocityX);
+        const direction2 = Math.atan2(ball2.velocityY, ball2.velocityX);
 
         const velocityX1 = speed1 * Math.cos(direction1 - collisionAngle);
         const velocityY1 = speed1 * Math.sin(direction1 - collisionAngle);
         const velocityX2 = speed2 * Math.cos(direction2 - collisionAngle);
         const velocityY2 = speed2 * Math.sin(direction2 - collisionAngle);
 
-        const finalVelocityX1 = ((ball1.mass - ball2.mass) * velocityX1 + 2 * ball2.mass * velocityX2)
-            / ball1.mass + ball2.mass;
+        const finalVelocityX1 = ((ball1.mass - ball2.mass) * velocityX1 + 
+            (ball2.mass + ball2.mass) * velocityX2) / (ball1.mass + ball2.mass);
         
-        const finalVelocityX2 = ((ball2.mass - ball1.mass) * velocityX2 + 2 * ball1.mass * velocityX1)
-            / ball1.mass + ball2.mass;
+        const finalVelocityX2 = ((ball1.mass + ball1.mass) * velocityX1 + 
+            (ball2.mass - ball1.mass) * velocityX2) / (ball1.mass + ball2.mass);
 
         const finalVelocityY1 = velocityY1;
         const finalVelocityY2 = velocityY2;
 
         ball1.velocityX = Math.cos(collisionAngle) * finalVelocityX1 + 
             Math.cos(collisionAngle + Math.PI / 2) * finalVelocityY1;
+
         ball1.velocityY = Math.sin(collisionAngle) * finalVelocityX1 +
             Math.sin(collisionAngle + Math.PI / 2) * finalVelocityY1;
 
@@ -152,7 +156,7 @@ export function canvasApp() {
 
         ball2.velocityY = Math.sin(collisionAngle) * finalVelocityX2 +
             Math.sin(collisionAngle + Math.PI / 2) * finalVelocityY2;
-        
+
         ball1.nextX = (ball1.nextX += ball1.velocityX);
         ball1.nextY = (ball1.nextY += ball1.velocityY);
         ball2.nextX = (ball2.nextX += ball2.velocityX);

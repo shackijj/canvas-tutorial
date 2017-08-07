@@ -96,7 +96,7 @@ function canvasApp() {
     pointImage.src = 'images/point.png';
     var balls = [];
 
-    var numBalls = 500;
+    var numBalls = 100;
     var maxSize = 8;
     var minSize = 5;
     var maxSpeed = minSize + 5;
@@ -115,7 +115,7 @@ function canvasApp() {
         var retval = false;
         var dx = ball1.nextX - ball2.nextX;
         var dy = ball1.nextY - ball2.nextY;
-        var distance = dx * dx + dy * dy;
+        var distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= ball1.radius + ball2.radius) {
             retval = true;
         }
@@ -163,7 +163,7 @@ function canvasApp() {
     function update() {
         balls.forEach(function (ball) {
             ball.nextX = ball.x += ball.velocityX;
-            ball.nextX = ball.y += ball.velocityY;
+            ball.nextY = ball.y += ball.velocityY;
         });
     }
 
@@ -179,7 +179,7 @@ function canvasApp() {
                 ball.velocityX *= -1;
                 ball.nextX = ball.radius;
             } else if (ball.nextY + ball.radius > theCanvas.height) {
-                ball.velocitY *= -1;
+                ball.velocityY *= -1;
                 ball.nextY = theCanvas.height - ball.radius;
             }
         });
@@ -187,26 +187,30 @@ function canvasApp() {
 
     function collideBalls(ball1, ball2) {
         var dx = ball1.nextX - ball2.nextX;
-        var dy = ball2.nextY - ball2.nextY;
+        var dy = ball1.nextY - ball2.nextY;
+
         var collisionAngle = Math.atan2(dy, dx);
-        var speed1 = Math.sqrt(ball1.velocityX * ball1.velocityX + ball1.velocitY * ball1.velocityY);
-        var speed2 = Math.sqrt(ball2.velocityX * ball2.velocityX + ball2.velocitY * ball2.velocityY);
-        var direction1 = Math.atan2(ball1.velocitY, ball1.velocityX);
-        var direction2 = Math.atan2(ball2.velocitY, ball2.velocityX);
+
+        var speed1 = Math.sqrt(ball1.velocityX * ball1.velocityX + ball1.velocityY * ball1.velocityY);
+        var speed2 = Math.sqrt(ball2.velocityX * ball2.velocityX + ball2.velocityY * ball2.velocityY);
+
+        var direction1 = Math.atan2(ball1.velocityY, ball1.velocityX);
+        var direction2 = Math.atan2(ball2.velocityY, ball2.velocityX);
 
         var velocityX1 = speed1 * Math.cos(direction1 - collisionAngle);
         var velocityY1 = speed1 * Math.sin(direction1 - collisionAngle);
         var velocityX2 = speed2 * Math.cos(direction2 - collisionAngle);
         var velocityY2 = speed2 * Math.sin(direction2 - collisionAngle);
 
-        var finalVelocityX1 = ((ball1.mass - ball2.mass) * velocityX1 + 2 * ball2.mass * velocityX2) / ball1.mass + ball2.mass;
+        var finalVelocityX1 = ((ball1.mass - ball2.mass) * velocityX1 + (ball2.mass + ball2.mass) * velocityX2) / (ball1.mass + ball2.mass);
 
-        var finalVelocityX2 = ((ball2.mass - ball1.mass) * velocityX2 + 2 * ball1.mass * velocityX1) / ball1.mass + ball2.mass;
+        var finalVelocityX2 = ((ball1.mass + ball1.mass) * velocityX1 + (ball2.mass - ball1.mass) * velocityX2) / (ball1.mass + ball2.mass);
 
         var finalVelocityY1 = velocityY1;
         var finalVelocityY2 = velocityY2;
 
         ball1.velocityX = Math.cos(collisionAngle) * finalVelocityX1 + Math.cos(collisionAngle + Math.PI / 2) * finalVelocityY1;
+
         ball1.velocityY = Math.sin(collisionAngle) * finalVelocityX1 + Math.sin(collisionAngle + Math.PI / 2) * finalVelocityY1;
 
         ball2.velocityX = Math.cos(collisionAngle) * finalVelocityX2 + Math.cos(collisionAngle + Math.PI / 2) * finalVelocityY2;
