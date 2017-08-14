@@ -21,70 +21,46 @@ export function canvasApp() {
     pointImage.src = 'images/point.png';
     const points = [];
 
-    const p0 = {x: 60, y: 10};
-    const p1 = {x: 70, y: 200};
-    const p2 = {x: 125, y: 295};
-    const p3 = {x: 350, y: 350};
-    const ball = {x: 0, y: 0, speed: 0.01, t: 0};
+    const speed = 4;
+    const angle = 60;
+    const radians = angle * Math.PI / 180;
+    const radius = 15;
+    const gravity = 0.05;
+    const vx = Math.cos(radians) * speed;
+    const vy = Math.sin(radians) * speed;
+    const p1 = {x: 20, y: theCanvas.height - radius};
+    const ball = {x: p1.x, y: p1.y, vx, vy, radius};
 
     function drawPoint(point) {
         context.drawImage(pointImage, point.x, point.y, 1, 1);
     }
 
-    function drawScreen() {
-        const cx = 3 * (p1.x - p0.x);
-        const bx = 3 * (p2.x - p1.x) - cx;
-        const ax = p3.x - p0.x - cx - bx;
-
-        const cy = 3 * (p1.y - p0.y);
-        const by = 3 * (p2.y - p1.y) - cy;
-        const ay = p3.y - p0.y - cy - by;
-
-        const t = ball.t;
-
-        const xt = ax * Math.pow(t, 3) + bx * Math.pow(t, 2) + cx * t + p0.x;
-        const yt = ay * Math.pow(t, 3) + by * Math.pow(t, 2) + cy * t + p0.y;
-
-        ball.t += ball.speed;
-
-        if (ball.t > 1) {
-            ball.t = 1;
-        }
-        points.push({x: xt, y: yt});
-
+    function drawBackground() {
         context.fillStyle = '#EEEEEE';
         context.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
         context.strokeStyle = '#000000';
         context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+    }
 
-        context.fillStyle = '#FF0000';
-        context.beginPath();
-        context.arc(p0.x, p0.y, 8, 0, Math.PI*2, true);
-        context.closePath();
-        context.fill();
+    function drawScreen() {
+        points.push({x: ball.x, y: ball.y});
+        if (ball.y + ball.radius <= theCanvas.width) {
+            ball.vy -= gravity;
+        } else {
+            ball.vy = 0;
+            vall.vx = 0;
+            ball.y = theCanvas.height - ball.radius;
+        }
 
-        context.fillStyle = '#FF0000';
-        context.beginPath();
-        context.arc(p1.x, p1.y, 8, 0, Math.PI*2, true);
-        context.closePath();
-        context.fill();
-
-        context.fillStyle = '#FF0000';
-        context.beginPath();
-        context.arc(p2.x, p2.y, 8, 0, Math.PI*2, true);
-        context.closePath();
-        context.fill();
-
-        context.fillStyle = '#FF0000';
-        context.beginPath();
-        context.arc(p3.x, p3.y, 8, 0, Math.PI*2, true);
-        context.closePath();
-        context.fill();
+        ball.x += ball.vx;
+        ball.y -= ball.vy;
+        
+        drawBackground();
 
         context.fillStyle = '#000000';
         context.beginPath();
-        context.arc(xt, yt, 5, 0, Math.PI*2, true);
+        context.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2, true);
         context.closePath();
         context.fill();
 
@@ -95,6 +71,5 @@ export function canvasApp() {
         drawScreen();
         window.requestAnimationFrame(gameLoop);
     }
-
     window.requestAnimationFrame(gameLoop);
 }
