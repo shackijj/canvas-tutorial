@@ -94,15 +94,14 @@ function canvasApp() {
     pointImage.src = 'images/point.png';
     var points = [];
 
-    var speed = 4;
-    var angle = 60;
-    var radians = angle * Math.PI / 180;
-    var radius = 15;
-    var gravity = 0.05;
-    var vx = Math.cos(radians) * speed;
-    var vy = Math.sin(radians) * speed;
-    var p1 = { x: 20, y: theCanvas.height - radius };
-    var ball = { x: p1.x, y: p1.y, vx: vx, vy: vy, radius: radius };
+    var shipImage = new Image();
+    shipImage.src = 'images/space-ship.png';
+    shipImage.onload = gameLoop;
+
+    var easeValue = 0.05;
+    var p1 = { x: 240, y: -20 };
+    var p2 = { x: 240, y: 470 };
+    var ship = { x: p1.x, y: p1.y, ex: p2.x, ey: p2.y, vx: 0, vy: 0 };
 
     function drawPoint(point) {
         context.drawImage(pointImage, point.x, point.y, 1, 1);
@@ -117,34 +116,26 @@ function canvasApp() {
     }
 
     function drawScreen() {
-        points.push({ x: ball.x, y: ball.y });
-        if (ball.y + ball.radius <= theCanvas.width) {
-            ball.vy -= gravity;
-        } else {
-            ball.vy = 0;
-            vall.vx = 0;
-            ball.y = theCanvas.height - ball.radius;
-        }
-
-        ball.x += ball.vx;
-        ball.y -= ball.vy;
+        points.push({ x: ship.x, y: ship.y });
 
         drawBackground();
-
-        context.fillStyle = '#000000';
-        context.beginPath();
-        context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, true);
-        context.closePath();
-        context.fill();
-
         points.forEach(drawPoint);
+        var dx = ship.ex - ship.x;
+        var dy = ship.ey - ship.y;
+
+        ship.vx = dx * easeValue;
+        ship.vy = dy * easeValue;
+
+        ship.x += ship.vx;
+        ship.y += ship.vy;
+
+        context.drawImage(shipImage, ship.x - shipImage.width / 2, ship.y);
     }
 
     function gameLoop() {
         drawScreen();
         window.requestAnimationFrame(gameLoop);
     }
-    window.requestAnimationFrame(gameLoop);
 }
 
 /***/ }),
