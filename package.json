@@ -18,6 +18,7 @@
     "webpack": "^2.4.1"
   },
   "dependencies": {
+    "box2dweb": "^2.1.0-b",
     "modernizr": "^3.5.0"
   }
 }

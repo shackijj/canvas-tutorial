@@ -99,9 +99,13 @@ function canvasApp() {
     shipImage.onload = gameLoop;
 
     var easeValue = 0.05;
-    var p1 = { x: 240, y: -20 };
-    var p2 = { x: 240, y: 470 };
-    var ship = { x: p1.x, y: p1.y, ex: p2.x, ey: p2.y, vx: 0, vy: 0 };
+    var p1 = { x: 240, y: 450 };
+    var tempSpeed = .5;
+    var tempAngle = 270;
+    var tempRadians = tempAngle * Math.PI / 180;
+    var vx = Math.cos(tempRadians) * tempSpeed;
+    var vy = Math.sin(tempRadians) * tempSpeed;
+    var ship = { x: p1.x, y: p1.y, vx: vx, vy: vy };
 
     function drawPoint(point) {
         context.drawImage(pointImage, point.x, point.y, 1, 1);
@@ -120,11 +124,8 @@ function canvasApp() {
 
         drawBackground();
         points.forEach(drawPoint);
-        var dx = ship.ex - ship.x;
-        var dy = ship.ey - ship.y;
-
-        ship.vx = dx * easeValue;
-        ship.vy = dy * easeValue;
+        ship.vx = ship.vx + ship.vx * easeValue;
+        ship.vy = ship.vy + ship.vy * easeValue;
 
         ship.x += ship.vx;
         ship.y += ship.vy;

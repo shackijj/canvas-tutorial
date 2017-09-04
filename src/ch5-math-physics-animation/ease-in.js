@@ -23,13 +23,9 @@ export function canvasApp() {
     shipImage.onload = gameLoop;
 
     const easeValue = 0.05;
-    const p1 = {x: 240, y: 450};
-    const tempSpeed = .5;
-    const tempAngle = 270;
-    const tempRadians = tempAngle * Math.PI / 180;
-    const vx = Math.cos(tempRadians) * tempSpeed;
-    const vy = Math.sin(tempRadians) * tempSpeed;
-    const ship = {x: p1.x, y: p1.y, vx, vy};
+    const p1 = {x: 240, y: -20};
+    const p2 = {x: 240, y: 450};
+    const ship = {x: p1.x, y: p1.y, ex: p2.x, ey: p2.y, vx: 0, vy: 0};
 
     function drawPoint(point) {
         context.drawImage(pointImage, point.x, point.y, 1, 1);
@@ -48,8 +44,11 @@ export function canvasApp() {
 
         drawBackground();
         points.forEach(drawPoint);
-        ship.vx = ship.vx + (ship.vx * easeValue);
-        ship.vy = ship.vy + (ship.vy * easeValue);
+        const dx = ship.ex - ship.x;
+        const dy = ship.ey - ship.y;
+
+        ship.vx = dx * easeValue;
+        ship.vy = dy * easeValue;
 
         ship.x += ship.vx;
         ship.y += ship.vy;
