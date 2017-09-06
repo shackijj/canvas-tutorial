@@ -1,7 +1,26 @@
+import './vendor/box2dweb/Box2d.min';
+
+const { b2Vec2 } = Box2D.Common.Math;
+const { b2BodyDef, b2Body, b2FixtureDef, b2World, b2DebugDraw } = Box2D.Dynamics;
+const { b2PolygonShape, b2CircleShape } = Box2D.Collision.Shapes;
+
 export function canvasApp() {
     if (!Modernizr.canvas) {
         return;
     }
+
+    const world = new b2World(new b2Vec2(0, 10), true);
+    const scale = 30;
+    const walls = [
+        // top
+        {x: 250 / scale, y: 1 / scale, w: 500/ 2 / scale , h: 1 / scale},
+        // bottom
+        {x: 250 / scale, y: 499 / scale, w: 500/ 2 / scale, h: 1 / scale},
+        // left
+        {x: 0, y: 1 / scale, w: 1 / scale, h: 500 / 2 / scale},
+        // right
+        {x: 500 / scale, y: 250 / scale, w: 1 / scale, h: 500 / 2 / scale},
+    ];
 
     const appElement = document.getElementById('app');
     const appTemplate = 
@@ -13,52 +32,4 @@ export function canvasApp() {
 
     const theCanvas = document.getElementById('canvasOne');
     const context = theCanvas.getContext("2d");
-
-    const pointImage = new Image();
-    pointImage.src = 'images/point.png';
-    const points = [];
-
-    const shipImage = new Image();
-    shipImage.src = 'images/space-ship.png';
-    shipImage.onload = gameLoop;
-
-    const easeValue = 0.05;
-    const p1 = {x: 240, y: 450};
-    const tempSpeed = .5;
-    const tempAngle = 270;
-    const tempRadians = tempAngle * Math.PI / 180;
-    const vx = Math.cos(tempRadians) * tempSpeed;
-    const vy = Math.sin(tempRadians) * tempSpeed;
-    const ship = {x: p1.x, y: p1.y, vx, vy};
-
-    function drawPoint(point) {
-        context.drawImage(pointImage, point.x, point.y, 1, 1);
-    }
-
-    function drawBackground() {
-        context.fillStyle = '#EEEEEE';
-        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
-
-        context.strokeStyle = '#000000';
-        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
-    }
-
-    function drawScreen() {
-        points.push({x: ship.x, y: ship.y});
-
-        drawBackground();
-        points.forEach(drawPoint);
-        ship.vx = ship.vx + (ship.vx * easeValue);
-        ship.vy = ship.vy + (ship.vy * easeValue);
-
-        ship.x += ship.vx;
-        ship.y += ship.vy;
-    
-        context.drawImage(shipImage, ship.x - shipImage.width / 2, ship.y);
-    }
-
-    function gameLoop() {
-        drawScreen();
-        window.requestAnimationFrame(gameLoop);
-    }
 }
