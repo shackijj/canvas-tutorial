@@ -9,17 +9,52 @@ export function canvasApp() {
         return;
     }
 
-    const world = new b2World(new b2Vec2(0, 10), true);
+    const appElement = document.getElementById('app');
+    const appTemplate = 
+        `<canvas id="canvasOne" width="450" height="350">
+        Your browser doesn't support HTML5 canvas.
+        </canvas>
+        <canvas id="canvasTwo" width="450" height="350">
+        Your browser doesn't support HTML5 canvas.
+        </canvas>`;
+
+    appElement.innerHTML = appTemplate;
+
+    const theCanvas = document.getElementById('canvasOne');
+    const context = theCanvas.getContext("2d");
+
+    const theCanvasTwo = document.getElementById('canvasTwo');
+    const context2 = theCanvasTwo.getContext('2d');
+    const world = new b2World(new b2Vec2(/* x gravity */ 0, /* y gravity */ 0), true);
     const scale = 30;
     const wallsDef = [
         // top
-        {x: 250 / scale, y: 1 / scale, w: 499 / 2 / scale , h: 1 / scale},
+        {
+            x: theCanvas.width / 2 / scale,
+            y: 1 / scale,
+            w: theCanvas.width / 2 / scale,
+            h: 1 / scale
+        },
         // bottom
-        {x: 250 / scale, y: 499 / scale, w: 499 / 2 / scale, h: 1 / scale},
+        {
+            x: theCanvas.width / 2 / scale,
+            y: theCanvas.height / scale,
+            w: theCanvas.width / 2 / scale,
+            h: 1 / scale
+        },
         // left
-        {x: 1 / scale, y: 250 / scale, w: 1 / scale, h: 499 / 2 / scale},
+        {
+            x: 1 / scale,
+            y: theCanvas.height / 2  / scale,
+            w: 1 / scale,
+            h: theCanvas.height / 2  / scale},
         // right
-        {x: 499 / scale, y: 250 / scale, w: 1 / scale , h: 500 / 2 / scale},
+        {
+            x: theCanvas.width / scale,
+            y: theCanvas.height / 2  / scale,
+            w: 1 / scale,
+            h: theCanvas.height / 2  / scale
+        },
     ];
 
     const walls = [];
@@ -44,9 +79,11 @@ export function canvasApp() {
     for (let i = 0; i < numBalls; i++) {
         const ballDef = new b2BodyDef;
         ballDef.type = b2Body.b2_dynamicBody;
-        const ypos = (Math.random() * 8) + 1;
-        const xpos = (Math.random() * 14) + 1;
-        const size = (Math.random() * 0.4) + 0.2;
+        const ypos = (Math.random() * theCanvas.height) / scale;
+        const xpos = (Math.random() * theCanvas.width) / scale;
+        const size = ((Math.random() * 20) + 5) / scale;
+        const xVelocity = (Math.random() * 10) - 5;
+        const yVelocity = (Math.random() * 10) - 5;
         ballDef.position.Set(xpos, ypos);
 
         const ballFixture = new b2FixtureDef;
@@ -56,23 +93,13 @@ export function canvasApp() {
         ballFixture.shape = new b2CircleShape(size);
         const newBall = world.CreateBody(ballDef);
         newBall.CreateFixture(ballFixture);
+        newBall.SetLinearVelocity(new b2Vec2(xVelocity, yVelocity));
         balls.push(newBall);
     }
 
-    const appElement = document.getElementById('app');
-    const appTemplate = 
-        `<canvas id="canvasOne" width="500" height="500" style="display: block;">
-        Your browser doesn't support HTML5 canvas.
-        </canvas>`;
-
-    appElement.innerHTML = appTemplate;
-
-    const theCanvas = document.getElementById('canvasOne');
-    const context = theCanvas.getContext("2d");
-
     const debugDraw = new b2DebugDraw;
-    debugDraw.SetSprite(context);
-    debugDraw.SetDrawScale(30);
+    debugDraw.SetSprite(context2);
+    debugDraw.SetDrawScale(scale);
     debugDraw.SetFillAlpha(0.3);
     debugDraw.SetLineThickness(1.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
@@ -82,6 +109,24 @@ export function canvasApp() {
         world.Step(1 / 60, 10, 10);
         world.DrawDebugData();
         world.ClearForces();
+
+        context.fillStyle = '#EEEEEE';
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
+
+        context.strokeStyle = '#000000';
+        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+
+        balls.forEach((ball) => {
+            const position = ball.GetPosition();
+            const fixtureList = ball.GetFixtureList();
+            const shape = fixtureList.GetShape();
+
+            context.fillStyle = '#000000';
+            context.beginPath();
+            context.arc(position.x * scale, position.y * scale, shape.GetRadius() * scale, 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
+        });
     }
 
     function gameLoop () {

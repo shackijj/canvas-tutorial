@@ -95,17 +95,46 @@ function canvasApp() {
         return;
     }
 
-    var world = new b2World(new b2Vec2(0, 10), true);
+    var appElement = document.getElementById('app');
+    var appTemplate = '<canvas id="canvasOne" width="450" height="350">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>\n        <canvas id="canvasTwo" width="450" height="350">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
+
+    appElement.innerHTML = appTemplate;
+
+    var theCanvas = document.getElementById('canvasOne');
+    var context = theCanvas.getContext("2d");
+
+    var theCanvasTwo = document.getElementById('canvasTwo');
+    var context2 = theCanvasTwo.getContext('2d');
+    var world = new b2World(new b2Vec2( /* x gravity */0, /* y gravity */0), true);
     var scale = 30;
     var wallsDef = [
     // top
-    { x: 250 / scale, y: 1 / scale, w: 499 / 2 / scale, h: 1 / scale },
+    {
+        x: theCanvas.width / 2 / scale,
+        y: 1 / scale,
+        w: theCanvas.width / 2 / scale,
+        h: 1 / scale
+    },
     // bottom
-    { x: 250 / scale, y: 499 / scale, w: 499 / 2 / scale, h: 1 / scale },
+    {
+        x: theCanvas.width / 2 / scale,
+        y: theCanvas.height / scale,
+        w: theCanvas.width / 2 / scale,
+        h: 1 / scale
+    },
     // left
-    { x: 1 / scale, y: 250 / scale, w: 1 / scale, h: 499 / 2 / scale },
+    {
+        x: 1 / scale,
+        y: theCanvas.height / 2 / scale,
+        w: 1 / scale,
+        h: theCanvas.height / 2 / scale },
     // right
-    { x: 499 / scale, y: 250 / scale, w: 1 / scale, h: 500 / 2 / scale }];
+    {
+        x: theCanvas.width / scale,
+        y: theCanvas.height / 2 / scale,
+        w: 1 / scale,
+        h: theCanvas.height / 2 / scale
+    }];
 
     var walls = [];
 
@@ -129,9 +158,11 @@ function canvasApp() {
     for (var i = 0; i < numBalls; i++) {
         var ballDef = new b2BodyDef();
         ballDef.type = b2Body.b2_dynamicBody;
-        var ypos = Math.random() * 8 + 1;
-        var xpos = Math.random() * 14 + 1;
-        var size = Math.random() * 0.4 + 0.2;
+        var ypos = Math.random() * theCanvas.height / scale;
+        var xpos = Math.random() * theCanvas.width / scale;
+        var size = (Math.random() * 20 + 5) / scale;
+        var xVelocity = Math.random() * 10 - 5;
+        var yVelocity = Math.random() * 10 - 5;
         ballDef.position.Set(xpos, ypos);
 
         var ballFixture = new b2FixtureDef();
@@ -141,20 +172,13 @@ function canvasApp() {
         ballFixture.shape = new b2CircleShape(size);
         var newBall = world.CreateBody(ballDef);
         newBall.CreateFixture(ballFixture);
+        newBall.SetLinearVelocity(new b2Vec2(xVelocity, yVelocity));
         balls.push(newBall);
     }
 
-    var appElement = document.getElementById('app');
-    var appTemplate = '<canvas id="canvasOne" width="500" height="500" style="display: block;">\n        Your browser doesn\'t support HTML5 canvas.\n        </canvas>';
-
-    appElement.innerHTML = appTemplate;
-
-    var theCanvas = document.getElementById('canvasOne');
-    var context = theCanvas.getContext("2d");
-
     var debugDraw = new b2DebugDraw();
-    debugDraw.SetSprite(context);
-    debugDraw.SetDrawScale(30);
+    debugDraw.SetSprite(context2);
+    debugDraw.SetDrawScale(scale);
     debugDraw.SetFillAlpha(0.3);
     debugDraw.SetLineThickness(1.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
@@ -164,6 +188,24 @@ function canvasApp() {
         world.Step(1 / 60, 10, 10);
         world.DrawDebugData();
         world.ClearForces();
+
+        context.fillStyle = '#EEEEEE';
+        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
+
+        context.strokeStyle = '#000000';
+        context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+
+        balls.forEach(function (ball) {
+            var position = ball.GetPosition();
+            var fixtureList = ball.GetFixtureList();
+            var shape = fixtureList.GetShape();
+
+            context.fillStyle = '#000000';
+            context.beginPath();
+            context.arc(position.x * scale, position.y * scale, shape.GetRadius() * scale, 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
+        });
     }
 
     function gameLoop() {
