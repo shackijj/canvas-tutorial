@@ -20,7 +20,11 @@ module.exports = {
                     options: {
                         presets: ['env']
                     }
-                }
+                },
+            },
+            {
+                test: /Box2D.js$/,
+                use: [ 'script-loader' ]
             }
         ]
     },
