@@ -67,7 +67,7 @@ export function canvasApp() {
         const wallFixture = new b2FixtureDef();
         wallFixture.density = 10.0;
         wallFixture.friction = 0.5;
-        wallFixture.restitution = 1;
+        wallFixture.restitution = 0.5;
         wallFixture.shape = new b2PolygonShape();
         wallFixture.shape.SetAsBox(wall.w, wall.h);
         newWall.CreateFixture(wallFixture);
@@ -89,9 +89,9 @@ export function canvasApp() {
         boxDef.position.Set(xPos, yPos);
         const newBox = world.CreateBody(boxDef);
         const boxFixture = new b2FixtureDef();
-        boxFixture.density = 10.0;
+        boxFixture.density = 20.0;
         boxFixture.friction = 0.5;
-        boxFixture.restitution = 1;
+        boxFixture.restitution = 0.1;
         boxFixture.shape = new b2PolygonShape();
         boxFixture.shape.SetAsBox(
             (boxWidth / scale) / 2,
@@ -103,6 +103,28 @@ export function canvasApp() {
         });
 
         boxes.push(newBox);
+    }
+
+    const balls = [];
+
+    function createBall(event) {
+        const { clientX: x, clientY: y } = event;
+        const ballDef = new b2BodyDef();
+        ballDef.type = b2Body.b2_dynamicBody;
+        const xPos = x / scale;
+        const yPos = y / scale;
+        const size = 7 / scale;
+        ballDef.position.Set(xPos, yPos);
+
+        const ballFixture = new b2FixtureDef();
+        ballFixture.density = 30.0;
+        ballFixture.friction = 0.6;
+        ballFixture.restitution = .2;
+        ballFixture.shape = new b2CircleShape(size);
+        const newBall = world.CreateBody(ballDef);
+        newBall.CreateFixture(ballFixture);
+        
+        balls.push(newBall);
     }
 
     const debugDraw = new b2DebugDraw;
@@ -126,8 +148,6 @@ export function canvasApp() {
 
         boxes.forEach((box) => {
             const position = box.GetPosition();
-            const fixtureList = box.GetFixtureList();
-            const shape = fixtureList.GetShape();
             const userData = box.GetUserData();
 
             context.fillStyle = '#000000';
@@ -144,6 +164,24 @@ export function canvasApp() {
 
             context.restore();
         });
+
+        balls.forEach((ball) => {
+            const position = ball.GetPosition();
+            const fixtureList = ball.GetFixtureList();
+            const shape = fixtureList.GetShape();
+            
+            context.fillStyle = '#FF0000';
+            context.beginPath();
+            context.arc(
+                position.x * scale,
+                position.y * scale,
+                shape.GetRadius() * scale,
+                0,
+                Math.PI * 2,
+                true);
+            context.closePath();
+            context.fill();
+        });
     }
 
     function gameLoop () {
@@ -151,5 +189,6 @@ export function canvasApp() {
         drawScreen();
     }
 
+    theCanvas.addEventListener('mouseup', createBall);
     gameLoop();
 }
