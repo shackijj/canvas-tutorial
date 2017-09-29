@@ -105,7 +105,7 @@ function canvasApp() {
 
     var theCanvasTwo = document.getElementById('canvasTwo');
     var context2 = theCanvasTwo.getContext('2d');
-    var world = new b2World(new b2Vec2( /* x gravity */0, /* y gravity */0), true);
+    var world = new b2World(new b2Vec2( /* x gravity */0, /* y gravity */10), true);
     var scale = 30;
     var wallsDef = [
     // top
@@ -153,27 +153,32 @@ function canvasApp() {
         walls.push(newWall);
     });
 
-    var numBalls = 50;
-    var balls = [];
-    for (var i = 0; i < numBalls; i++) {
-        var ballDef = new b2BodyDef();
-        ballDef.type = b2Body.b2_dynamicBody;
-        var ypos = Math.random() * theCanvas.height / scale;
-        var xpos = Math.random() * theCanvas.width / scale;
-        var size = (Math.random() * 20 + 5) / scale;
-        var xVelocity = Math.random() * 10 - 5;
-        var yVelocity = Math.random() * 10 - 5;
-        ballDef.position.Set(xpos, ypos);
+    var numBoxes = 8;
+    var boxes = [];
+    var boxHeight = 25;
+    var boxWidth = 25;
+    var startX = theCanvas.width - 100;
+    var startY = theCanvas.height - boxHeight - 100;
+    for (var i = 0; i < numBoxes; i++) {
+        var boxDef = new b2BodyDef();
+        boxDef.type = b2Body.b2_dynamicBody;
+        var yPos = (startY - i * boxHeight) / scale;
+        var xPos = (startX + i * 2) / scale;
+        boxDef.position.Set(xPos, yPos);
+        var newBox = world.CreateBody(boxDef);
+        var boxFixture = new b2FixtureDef();
+        boxFixture.density = 10.0;
+        boxFixture.friction = 0.5;
+        boxFixture.restitution = 1;
+        boxFixture.shape = new b2PolygonShape();
+        boxFixture.shape.SetAsBox(boxWidth / scale / 2, boxHeight / scale / 2);
+        newBox.CreateFixture(boxFixture);
+        newBox.SetUserData({
+            width: boxWidth / scale,
+            height: boxHeight / scale
+        });
 
-        var ballFixture = new b2FixtureDef();
-        ballFixture.density = 10.0;
-        ballFixture.friction = 0.5;
-        ballFixture.restitution = 1;
-        ballFixture.shape = new b2CircleShape(size);
-        var newBall = world.CreateBody(ballDef);
-        newBall.CreateFixture(ballFixture);
-        newBall.SetLinearVelocity(new b2Vec2(xVelocity, yVelocity));
-        balls.push(newBall);
+        boxes.push(newBox);
     }
 
     var debugDraw = new b2DebugDraw();
@@ -195,21 +200,28 @@ function canvasApp() {
         context.strokeStyle = '#000000';
         context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
 
-        balls.forEach(function (ball) {
-            var position = ball.GetPosition();
-            var fixtureList = ball.GetFixtureList();
+        boxes.forEach(function (box) {
+            var position = box.GetPosition();
+            var fixtureList = box.GetFixtureList();
             var shape = fixtureList.GetShape();
+            var userData = box.GetUserData();
 
             context.fillStyle = '#000000';
-            context.beginPath();
-            context.arc(position.x * scale, position.y * scale, shape.GetRadius() * scale, 0, Math.PI * 2, true);
-            context.closePath();
-            context.fill();
+            context.save();
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.translate(position.x * scale, position.y * scale);
+            context.rotate(box.GetAngle());
+            var width = userData.width,
+                height = userData.height;
+
+            context.fillRect(0 - width * scale / 2, 0 - height * scale / 2, width * scale, height * scale);
+
+            context.restore();
         });
     }
 
     function gameLoop() {
-        setTimeout(gameLoop, 20);
+        window.requestAnimationFrame(gameLoop);
         drawScreen();
     }
 
