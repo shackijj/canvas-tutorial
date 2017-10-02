@@ -1,3 +1,3 @@
-import { canvasApp } from './ch5-math-physics-animation';
+import { canvasApp } from './ch6-audio-and-video';
 
 window.addEventListener('load', canvasApp);
