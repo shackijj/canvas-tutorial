@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "watch": "webpack --progress --colors --watch"
+    "watch": "webpack --progress --colors --watch",
+    "start": "webpack-dev-server"
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +17,8 @@
     "babel-preset-env": "^1.4.0",
     "modernizr-webpack-plugin": "^1.0.5",
     "script-loader": "^0.7.0",
-    "webpack": "^2.4.1"
+    "webpack": "^2.4.1",
+    "webpack-dev-server": "^2.9.3"
   },
   "dependencies": {
     "box2dweb": "^2.1.0-b",
