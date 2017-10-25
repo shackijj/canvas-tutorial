@@ -13,4 +13,27 @@ export function canvasApp() {
     appElement.innerHTML = appTemplate;
 
     const theVideo = document.getElementById('theVideo');
+
+    let loadCount = 0;
+    const itemsToLoad = 2;
+
+    let buttonSheet;
+    const buttonWait = 5;
+    let timeWaited;
+
+
+    
+
+    function itemLoaded() {
+        loadCount++;
+        if (itemsToLoad === loadCount) {
+            startUp();
+        }
+    }
+
+    theVideo.addEventListener('canplay', itemLoaded, false);
+
+    buttonSheet = new Image();
+    buttonSheet.src = 'images/videobuttons.png';
+    buttonSheet.onload = itemLoaded;
 }
