@@ -30,6 +30,16 @@ export function canvasApp() {
     const partHeight = videoElement.height / cols;
 
     function randomizeBoard(board) {
+        const newBoard = board.concat([]);
+        for(let r = 0; r < rows; r++) {
+            for(let c = 0; c < cols; c++) {
+                const randC = Math.floor(Math.random() * cols);
+                const randR = Math.floor(Math.random() * rows);
+                const tmp = board[r][c];
+                board[r][c] = board[randR][randC];
+                board[randR][randC] = tmp;
+            }
+        }
         return board;
     }
 
@@ -78,6 +88,43 @@ export function canvasApp() {
             }
         }
     }
+
+    function eventMouseUp(event) {
+        const x = event.offsetX;
+        const y = event.offsetY;
+        const selectedList = [];
+        for(let r = 0; r < rows; r++) {
+            for(let c = 0; c < cols; c++) {
+                const startX = startXOffset + xPad * c + partWidth * c;
+                const startY = startYOffset + yPad * r + partHeight * r;
+                const endX = startX + partWidth;
+                const endY = startY + partHeight;
+
+                if (x >= startX && x <= endX && y >= startY && y <= endY) {
+                    if (board[r][c].selected) {
+                        board[r][c].selected = false;
+                    } else {
+                        board[r][c].selected = true;
+                    }
+                }
+
+                if (board[r][c].selected) {
+                    selectedList.push({c, r});
+                }
+
+                if (selectedList.length === 2) {
+                    const [selected1, selected2] = selectedList;
+                    const tmp = board[selected1.r][selected1.c];
+                    board[selected1.r][selected1.c] = board[selected2.r][selected2.c];
+                    board[selected2.r][selected2.c] = tmp;
+                    board[selected1.r][selected1.c].selected = false;
+                    board[selected2.r][selected2.c].selected = false;
+                    selectedList.length = 0;
+                }
+            }
+        }
+    }
+    theCanvas.addEventListener('mouseup', eventMouseUp, false);
 
     function gameLoop() {
         drawScreen();
