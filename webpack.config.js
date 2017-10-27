@@ -36,7 +36,16 @@ module.exports = {
         new ModernizrWebpackPlugin(ModernizrConfig)
     ],
     devServer: {
-        contentBase: path.join(__dirname, "dist"),
+        contentBase: [
+            path.join(__dirname, "dist"),
+            path.join(__dirname, "images"),
+        ],
+        proxy: {
+            '/images/*': {
+                target: 'http://localhost:9000',
+                pathRewrite: { '^/images': ''}
+            }
+        },
         compress: true,
         port: 9000
     }
