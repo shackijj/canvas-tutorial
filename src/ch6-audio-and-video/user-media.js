@@ -11,33 +11,20 @@ export function canvasApp() {
     const appElement = document.getElementById('app');
     const appTemplate = 
         (userMediaSupported()) ?
-            `<video autoplay id="theVideo" style="display: none"></video>
-            <canvas id="theCanvas" width="640" height="480"></canvas>
-            <form>
-                <input type="button" id="createImageData" value="Take photo"/>
-            </form>` :
+            `<video autoplay id="theVideo"></video>` :
             `<p>getUserMedia not supported</p>`;
 
     appElement.innerHTML = appTemplate;
-    const video = document.getElementById('theVideo');
-    const canvas = document.getElementById('theCanvas');
-    const context = canvas.getContext('2d');
-    const button = document.getElementById('createImageData');
 
-    function drawScreen() {
-        context.drawImage(video, 10, 10);
-    }
-
-    function gameLoop() {
-        drawScreen();
-        window.requestAnimationFrame(gameLoop);
+    function doCoolStuff() {
+        alert('Cool stuff');
     }
 
     function mediaSuccess(userMedia) {
         window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+        const video = document.getElementById('theVideo');
         video.src = window.URL.createObjectURL(userMedia);
-        video.play();
-        gameLoop();
+        video.onloadedmetadata = doCoolStuff;
     }
 
     function mediaFail({code}) {
@@ -53,9 +40,6 @@ export function canvasApp() {
 
         navigator.getUserMedia({video: true, audio: false}, mediaSuccess, mediaFail);
     }
-    function createImageDataClicked() {
-        window.open(canvas.toDataURL(), 'canvasImage', `left=0,top=0,width=100,height=100,toolbar=0,resizable=0`);
-    }
-    button.addEventListener('click', createImageDataClicked, false);
+
     startVideo();
 }

@@ -36,6 +36,8 @@ module.exports = {
         new ModernizrWebpackPlugin(ModernizrConfig)
     ],
     devServer: {
+        host: '10.10.4.46',
+        https: true,
         contentBase: [
             path.join(__dirname, "dist"),
             path.join(__dirname, "images"),
