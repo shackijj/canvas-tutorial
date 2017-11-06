@@ -54,7 +54,9 @@ export function canvasApp() {
         navigator.getUserMedia({video: true, audio: false}, mediaSuccess, mediaFail);
     }
     function createImageDataClicked() {
-        window.open(canvas.toDataURL(), 'canvasImage', `left=0,top=0,width=100,height=100,toolbar=0,resizable=0`);
+        const image = new Image();
+        image.src = canvas.toDataURL();
+        document.body.appendChild(image);
     }
     button.addEventListener('click', createImageDataClicked, false);
     startVideo();
