@@ -43,7 +43,7 @@ module.exports = {
         ],
         proxy: {
             '/images/*': {
-                target: 'http://localhost:9000',
+                target: 'https://localhost:9000',
                 pathRewrite: { '^/images': ''}
             }
         },

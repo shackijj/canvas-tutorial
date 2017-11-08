@@ -1,3 +1,3 @@
-import { canvasApp } from './ch6-audio-and-video';
+import { canvasApp } from './ch7-audio';
 
 window.addEventListener('load', canvasApp);
