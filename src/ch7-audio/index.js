@@ -1,192 +1,148 @@
-export function canvasApp() {
-    if (!Modernizr.canvas) {
-        return;
+import supportedAudioFormat from './supportedAudioFormat';
+
+const STATE_INIT = 10;
+const STATE_LOADING = 20;
+const STATE_RESET = 30;
+const STATE_PLAYING = 40;
+
+let appState = STATE_INIT;
+
+let loadCount = 0;
+let itemsToLoad = 0;
+
+let alienImage;
+let missileImage;
+let playerImage;
+
+let explodeSound;
+let shootSound;
+
+let mouseX;
+let mouseY;
+
+const player = { x: 250, y: 475 };
+
+const aliens = [];
+const missiles = [];
+
+const ALIEN_START_X = 25;
+const ALIEN_START_Y = 25;
+const ALIEN_ROWS = 5;
+const ALIEN_COLS = 8;
+const ALIENT_SPACING = 40;
+
+const appElement = document.getElementById('app');
+const appTemplate = `<canvas id="theCanvas" width="500" height="500"></canvas>`;
+appElement.innerHTML = appTemplate;
+const theCanvas = document.getElementById('theCanvas');
+
+function itemLoaded() {
+    loadCount++;
+
+    if (loadCount >= itemLoaded) {
+        shootSound.removeEventListener("canplaythrough",itemLoaded, false);
+        explodeSound.removeEventListener("canplaythrough",itemLoaded,false);
+
+        appState = STATE_RESET;
     }
-
-    const appElement = document.getElementById('app');
-    const appTemplate = `<canvas id="theCanvas" width="500" height="500"></canvas>`;
-    appElement.innerHTML = appTemplate;
-
-    let itemsLoaded = 0;
-    const itemsToLoad = 2;
-
-
-    const theAudio = document.createElement('audio');
-    theAudio.setAttribute('src', 'https://upload.wikimedia.org/wikipedia/en/4/45/ACDC_-_Back_In_Black-sample.ogg');
-    appElement.appendChild(theAudio);
-
-    const buttonsSheet = new Image();
-
-    const theCanvas = document.getElementById('theCanvas');
-    const context = theCanvas.getContext('2d');
-
-    const bW = 32;
-    const bH = 32;
-    const playBackW = 206;
-    const volBackW = 50;
-    const sliderW = 10;
-    const sliderH = 32;
-    const controlStartX = 25;
-    const controlStartY = 300;
-
-    const playX = controlStartX;
-    const playY = controlStartY;
-    const playBackX = controlStartX + bW;
-    const playBackY = controlStartY;
-    const volBackX = controlStartX + bW + playBackW;
-    const volBackY = controlStartY;
-    const loopX = controlStartX + bW + playBackW + volBackW;
-    const loopY = controlStartY;
-
-    const volumeSliderStart = volBackX;
-    const volumeSliderEnd = volBackX + volBackW - sliderW;
-
-    const buttonWait = 30;
-    let timeWaited = 0;
-    let mouseX;
-    let mouseY;
-    let volumeSliderDrag;
-    let volumeSliderX;
-    let volumeSliderY;
-
-    function drawScreen() {
-        context.fillStyle = '#aaaaaa';
-        context.fillRect(0, 0, theCanvas.width, theCanvas.height);
-
-        context.drawImage(buttonsSheet, 32, 0, playBackW, bH, playBackX, playBackY, playBackW, bH);
-
-        const slideIncrement = playBackW / theAudio.duration;
-        const sliderX = (controlStartX + bW) + (slideIncrement * theAudio.currentTime);
-        context.drawImage(buttonsSheet, 238, 0, sliderW, bH, sliderX, controlStartY, sliderW, bH);
-
-        if (theAudio.ended&& !theAudio.loop) {
-            theAudio.currentTime = 0;
-            theAudio.pause();
-        }
-
-        if (theAudio.paused) {
-            context.drawImage(buttonsSheet, 0, 0, bW, bH, playX, playY, bW, bH)
-        } else {
-            context.drawImage(buttonsSheet, 0, 32, bW, bH, playX, playY, bW, bH)
-        }
-
-        if (theAudio.loop) {
-            context.drawImage(buttonsSheet, 113, 32, bW, bH, loopX, loopY, bW, bH)
-        } else {
-            context.drawImage(buttonsSheet, 81, 32, bW, bH, loopX, loopY, bW, bH)
-        }
-
-        volumeSliderX = volumeSliderStart + (theAudio.volume * (volBackW - sliderW));
-        volumeSliderY = controlStartY;
-        const volumeIncrement = 1 / (volBackW - sliderW);
-
-        context.drawImage(buttonsSheet, 32, 32, volBackW, bH, volBackX, volBackY, volBackW, bH);
-        if (volumeSliderDrag) {
-            volumeSliderX = mouseX;
-            if (volumeSliderX > volumeSliderEnd) {
-                volumeSliderX = volumeSliderEnd;
-            }
-            if (volumeSliderX < volumeSliderStart) {
-                volumeSliderX = volumeSliderStart;
-            }
-        } else {
-            volumeSliderX = volumeSliderStart + (theAudio.volume * (volBackW - sliderW));
-        }
-
-        context.drawImage(buttonsSheet, 238, 0, sliderW, bH, volumeSliderX, volumeSliderY, sliderW, bH);
-        theAudio.volume = (volumeSliderX - volumeSliderStart) * volumeIncrement;
-
-        timeWaited++;
-
-        context.fillStyle = '#000000';
-        context.fillText(`duration: ${theAudio.duration}`, 20, 20);
-        context.fillText(`currentTime: ${theAudio.currentTime}`, 20, 40);
-        context.fillText(`loop: ${theAudio.loop}`, 20, 60);
-        context.fillText(`autoplay: ${theAudio.autoplay}`, 20, 80);
-        context.fillText(`muted: ${theAudio.muted}`, 20, 100);
-        context.fillText(`controls: ${theAudio.controls}`, 20, 120);
-        context.fillText(`volume: ${theAudio.volume}`, 20, 140);
-        context.fillText(`paused: ${theAudio.paused}`, 20, 160);
-        context.fillText(`ended: ${theAudio.ended}`, 20, 180);
-        context.fillText(`currentSrc: ${theAudio.currentSrc}`, 20, 200);
-        context.fillText(`Can play audio/ogg?: ${theAudio.canPlayType('audio/ogg')}`, 20, 220);
-        context.fillText(`Can play audio/wav?: ${theAudio.canPlayType('audio/wav')}`, 20, 240);
-        context.fillText(`Can play audio/mp3?: ${theAudio.canPlayType('audio/mp3')}`, 20, 260);
-    }
-
-    function gameLoop() {
-        drawScreen();
-        window.requestAnimationFrame(gameLoop);
-    }
-
-    function audioLoaded() {
-        theAudio.play();
-    }
-
-    function itemLoaded() {
-        itemsLoaded++;
-        if (itemsLoaded === itemsToLoad) {
-            gameLoop();
-        }
-    }
-
-    function eventMouseUp(event) {
-        if (timeWaited >= buttonWait) {
-            timeWaited = 0;
-            if ((mouseY >= playY) && (mouseY <= playY + bH) && (mouseX >= playX) && (mouseX <= playX + bW)) {
-                if (theAudio.paused) {
-                    theAudio.play();
-                } else {
-                    theAudio.pause();
-                }
-            }
-
-            if ((mouseY >= loopY) && (mouseY <= loopY + bH) && (mouseX >= loopX) && (mouseX <= loopX + bW)) {
-                if (theAudio.loop) {
-                    theAudio.loop = false;
-                } else {
-                    theAudio.loop = true;
-                }
-            }
-        }
-
-        if (volumeSliderDrag) {
-            volumeSliderDrag = false;
-        }
-    }
-    function eventMouseDown(event) {
-        if ((mouseX >= volumeSliderX) && (mouseX <= volumeSliderX + sliderW) && (mouseY >= volumeSliderY) && (mouseY <= volumeSliderY + sliderH)) {
-            volumeSliderDrag = true;
-        }
-    }
-    function eventMouseMove(event) {
-        let x;
-        let y;
-
-        if (event.pageX || event.pageY) {
-            x = event.pageX;
-            y = event.pageY;
-        } else {
-            x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-            y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-        }
-
-        x = x - theCanvas.offsetLeft;
-        y = y - theCanvas.offsetTop;
-        mouseX = x;
-        mouseY = y;
-    }
-
-    theCanvas.addEventListener('mouseup', eventMouseUp, false);
-    theCanvas.addEventListener('mousedown', eventMouseDown, false);
-    theCanvas.addEventListener('mousemove', eventMouseMove, false);
-
-    buttonsSheet.onload = itemLoaded;
-    buttonsSheet.src = 'audiocontrols.png';
-
-    theAudio.addEventListener('canplaythrough', itemLoaded, false);
-
-    theAudio.load();
-
-    gameLoop();
 }
+
+function initApp() {
+    loadCount = 0;
+    itemsToLoad = 5;
+    explodeSound = document.createElement('audio');
+    document.body.appendChild(explodeSound);
+    const audioType = supportedAudioFormat(explodeSound);
+    explodeSound.addEventListener('canplaythrough', itemLoaded);
+    explodeSound.setAttribute('src', `audio/space-raiders/explode1.${audioType}`);
+
+    shootSound = document.createElement('audio');
+    document.body.appendChild(shootSound);
+    shootSound.addEventListener('canplaythrough', itemLoaded);
+    shootSound.setAttribute('src', `audio/space-raiders/shoot1.${audioType}`);
+
+    alienImage = new Image();
+    alienImage.src = 'images/alien.png';
+    alienImage.onload = itemLoaded;
+
+
+    missileImage = new Image();
+    missileImage.src = 'images/missile.png';
+    missileImage.onload = itemLoaded;
+
+
+    playerImage = new Image();
+    playerImage.src = 'images/player.png';
+    playerImage.onload = itemLoaded;
+
+    appState = STATE_LOADING;
+}
+
+function startLevel() {
+    const {width, height} = alienImage;
+    for (let r = 0; r < ALIEN_ROWS; r++) {
+        for(let c = 0; c < ALIEN_COLS; c++) {
+            aliens.push({
+                speed: 2,
+                x: ALIEN_START_X + c * ALIENT_SPACING,
+                y: ALIEN_START_Y + r * ALIENT_SPACING,
+                width,
+                height,
+            })
+        }
+    }
+}
+
+function resetApp() {
+    startLevel();
+    shootSound.volume = .5;
+    shootSound.volume = .5;
+    appState = STATE_PLAYING;
+}
+
+function run() {
+    switch(appState) {
+        case STATE_INIT:
+            initApp();
+            break;
+        case STATE_LOADING:
+            // wait for call blocks
+            break;
+        case STATE_RESET:
+            resetApp();
+            break;
+        case STATE_PLAYING:
+            drawScreen();
+            break;
+    }
+}
+
+function eventMouseMove(event) {
+    const {offsetX, offsetY} = event;
+    mouseX = offsetX;
+    mouseY = offsetY;
+    player.x = offsetX;
+    player.y = offsetY;
+}
+function eventMouseUp(event) {
+    missiles.push({
+        speed: 5,
+        x: player.x + .5 * player.width,
+        y: player.y - missileImage.height,
+        width: missile.width,
+        height: missileImage.height,
+    });
+    shootSound.play();
+}
+
+theCanvas.addEventListener('mouseup', eventMouseUp, false);
+theCanvas.addEventListener('mousemove', eventMouseMove, false);
+
+function gameLoop() {
+    window.requestAnimationFrame(gameLoop);
+    run();
+}
+
+const canvasApp = gameLoop;
+
+export { canvasApp };
