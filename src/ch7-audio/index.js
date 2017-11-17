@@ -7,7 +7,7 @@ const STATE_PLAYING = 40;
 
 let appState = STATE_INIT;
 
-let loadCount = 0;
+let itemsLoaded = 0;
 let itemsToLoad = 0;
 
 let alienImage;
@@ -29,17 +29,18 @@ const ALIEN_START_X = 25;
 const ALIEN_START_Y = 25;
 const ALIEN_ROWS = 5;
 const ALIEN_COLS = 8;
-const ALIENT_SPACING = 40;
+const ALIEN_SPACING = 40;
 
 const appElement = document.getElementById('app');
 const appTemplate = `<canvas id="theCanvas" width="500" height="500"></canvas>`;
 appElement.innerHTML = appTemplate;
+
 const theCanvas = document.getElementById('theCanvas');
+const context = theCanvas.getContext('2d');
 
 function itemLoaded() {
-    loadCount++;
-
-    if (loadCount >= itemLoaded) {
+    itemsLoaded++;
+    if (itemsLoaded >= itemsToLoad) {
         shootSound.removeEventListener("canplaythrough",itemLoaded, false);
         explodeSound.removeEventListener("canplaythrough",itemLoaded,false);
 
@@ -48,7 +49,7 @@ function itemLoaded() {
 }
 
 function initApp() {
-    loadCount = 0;
+    itemsLoaded = 0;
     itemsToLoad = 5;
     explodeSound = document.createElement('audio');
     document.body.appendChild(explodeSound);
@@ -84,8 +85,8 @@ function startLevel() {
         for(let c = 0; c < ALIEN_COLS; c++) {
             aliens.push({
                 speed: 2,
-                x: ALIEN_START_X + c * ALIENT_SPACING,
-                y: ALIEN_START_Y + r * ALIENT_SPACING,
+                x: ALIEN_START_X + c * ALIEN_SPACING,
+                y: ALIEN_START_Y + r * ALIEN_SPACING,
                 width,
                 height,
             })
@@ -122,6 +123,9 @@ function hitTest(image1, image2) {
 }
 
 function drawScreen() {
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, theCanvas.width, theCanvas.height);
+
     for (let i = missiles.length - 1; i >= 0; i--) {
         missiles[i].y -= missiles[i].speed;
         if (missiles[i].y < (0 - missiles[i].height)) {
@@ -129,7 +133,7 @@ function drawScreen() {
         }
     }
 
-    for (let i = alient.length - 1; i >= 0; i--) {
+    for (let i = aliens.length - 1; i >= 0; i--) {
         aliens[i].x += aliens[i].speed;
         if (aliens[i].x > (theCanvas.width - aliens[i].width) || aliens[i].x < 0) {
             aliens[i].speed *= -1;
@@ -137,15 +141,15 @@ function drawScreen() {
         } 
 
         if (aliens[i].y > theCanvas.height) {
-            aliens.splice(i, 1);
+            aliens.splice(i, 1); 
         }
     }
 
     missile: for (let i = missiles.length - 1; i >= 0; i--) {
         const tempMissile = missiles[i];
         for (let j = aliens.length - 1; j >= 0; j--) {
-            const tempAlient = aliens[j];
-            if (hitTest(tempAlient, tempMissile)) {
+            const tempAlien = aliens[j];
+            if (hitTest(tempAlien, tempMissile)) {
                 explodeSound.play();
                 aliens.splice(j, 1);
                 missiles.splice(i, 1);
@@ -196,7 +200,7 @@ function eventMouseMove(event) {
 function eventMouseUp(event) {
     missiles.push({
         speed: 5,
-        x: player.x + .5 * player.width,
+        x: player.x + (.5 * playerImage.width),
         y: player.y - missileImage.height,
         width: missileImage.width,
         height: missileImage.height,
