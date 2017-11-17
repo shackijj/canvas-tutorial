@@ -40,6 +40,7 @@ module.exports = {
         contentBase: [
             path.join(__dirname, "dist"),
             path.join(__dirname, "images"),
+            path.join(__dirname, "audio"),
         ],
         proxy: {
             '/images/*': {
