@@ -31,6 +31,13 @@ const ALIEN_ROWS = 5;
 const ALIEN_COLS = 8;
 const ALIEN_SPACING = 40;
 
+const MAX_SOUNDS = 8;
+const SOUND_EXPLODE = 'space-raiders/explode1';
+const SOUND_SHOOT = 'space-raiders/shoot1';
+
+const audioType = supportedAudioFormat(document.createElement('audio'));
+const sounds = [];
+
 const appElement = document.getElementById('app');
 const appTemplate = `<canvas id="theCanvas" width="500" height="500"></canvas>`;
 appElement.innerHTML = appTemplate;
@@ -79,6 +86,35 @@ function initApp() {
     appState = STATE_LOADING;
 }
 
+
+function playSound(sound, volume) {
+    let soundFound = false;
+    let soundIndex = 0;
+    if (sounds.length > 0) {
+        while(!soundFound && soundIndex < sound.length) {
+            let tSound = sounds[soundIndex];
+
+            if (tSound.ended) {
+                soundFound = true;
+            } else {
+                soundIndex++;
+            }
+        }
+    }
+    if (soundFound) {
+        const tempSound = sounds[soundIndex];
+        tempSound.setAttribute('src', sound + '.' + audioType);
+        tempSound.loop = false;
+        tempSound.volume = volume;
+        tempSound.play();
+    } else if (sounds.length < MAX_SOUNDS) {
+        const tempSound = document.createElement('audio');
+        tempSound.setAttribute('src', sound + '.' + audioType);
+        tempSound.volume = volume;
+        tempSound.play();
+        sounds.push(tempSound);
+    }
+}
 function startLevel() {
     const {width, height} = alienImage;
     for (let r = 0; r < ALIEN_ROWS; r++) {
@@ -114,7 +150,7 @@ function hitTest(image1, image2) {
     const o2Right = image2.x + image2.width;
 
     let rc = false
-    if ((o1Right > o2Left) || (o1Bottom < o2Top) || (o1Left > o2Right) || (o1Top > o2Bottom)) {
+    if ((o1Right < o2Left) || (o1Bottom < o2Top) || (o1Left > o2Right) || (o1Top > o2Bottom)) {
         rc = false;
     } else {
         rc = true;
@@ -150,7 +186,7 @@ function drawScreen() {
         for (let j = aliens.length - 1; j >= 0; j--) {
             const tempAlien = aliens[j];
             if (hitTest(tempAlien, tempMissile)) {
-                explodeSound.play();
+                playSound(SOUND_EXPLODE, .5);
                 aliens.splice(j, 1);
                 missiles.splice(i, 1);
                 break missile;
@@ -171,6 +207,8 @@ function drawScreen() {
     }
 
     context.drawImage(playerImage, player.x, player.y);
+    context.fillStyle = '#ffffff';
+    context.fillText("Active sounds: " + sounds.length, 200, 480);
 }
 
 function run() {
@@ -205,7 +243,7 @@ function eventMouseUp(event) {
         width: missileImage.width,
         height: missileImage.height,
     });
-    shootSound.play();
+    playSound(SOUND_SHOOT, .5);
 }
 
 theCanvas.addEventListener('mouseup', eventMouseUp, false);
