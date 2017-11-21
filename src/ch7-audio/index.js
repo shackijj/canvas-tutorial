@@ -14,9 +14,6 @@ let alienImage;
 let missileImage;
 let playerImage;
 
-let explodeSound;
-let shootSound;
-
 let mouseX;
 let mouseY;
 
@@ -36,6 +33,15 @@ const SOUND_EXPLODE = 'space-raiders/explode1';
 const SOUND_SHOOT = 'space-raiders/shoot1';
 
 const audioType = supportedAudioFormat(document.createElement('audio'));
+
+let explodeSound1;
+let explodeSound2;
+let explodeSound3;
+
+let shootSound1;
+let shootSound2;
+let shootSound3;
+
 const sounds = [];
 
 const appElement = document.getElementById('app');
@@ -48,8 +54,19 @@ const context = theCanvas.getContext('2d');
 function itemLoaded() {
     itemsLoaded++;
     if (itemsLoaded >= itemsToLoad) {
-        shootSound.removeEventListener("canplaythrough",itemLoaded, false);
-        explodeSound.removeEventListener("canplaythrough",itemLoaded,false);
+        explodeSound1.removeEventListener('canplaythrough', itemLoaded);
+        explodeSound2.removeEventListener('canplaythrough', itemLoaded);
+        explodeSound3.removeEventListener('canplaythrough', itemLoaded);
+        
+        shootSound1.removeEventListener('canplaythrough', itemLoaded);
+        shootSound2.removeEventListener('canplaythrough', itemLoaded);
+        shootSound3.removeEventListener('canplaythrough', itemLoaded);
+        sounds.push({name: SOUND_EXPLODE, element: explodeSound1, played: false});
+        sounds.push({name: SOUND_EXPLODE, element: explodeSound2, played: false});
+        sounds.push({name: SOUND_EXPLODE, element: explodeSound3, played: false});
+        sounds.push({name: SOUND_SHOOT, element: shootSound1, played: false});
+        sounds.push({name: SOUND_SHOOT, element: shootSound2, played: false});
+        sounds.push({name: SOUND_SHOOT, element: shootSound3, played: false});
 
         appState = STATE_RESET;
     }
@@ -57,17 +74,37 @@ function itemLoaded() {
 
 function initApp() {
     itemsLoaded = 0;
-    itemsToLoad = 5;
-    explodeSound = document.createElement('audio');
-    document.body.appendChild(explodeSound);
-    const audioType = supportedAudioFormat(explodeSound);
-    explodeSound.addEventListener('canplaythrough', itemLoaded);
-    explodeSound.setAttribute('src', `space-raiders/explode1.${audioType}`);
+    itemsToLoad = 9;
+    explodeSound1 = document.createElement('audio');
+    document.body.appendChild(explodeSound1);
+    explodeSound1.addEventListener('canplaythrough', itemLoaded);
+    explodeSound1.setAttribute('src', `space-raiders/explode1.${audioType}`);
 
-    shootSound = document.createElement('audio');
-    document.body.appendChild(shootSound);
-    shootSound.addEventListener('canplaythrough', itemLoaded);
-    shootSound.setAttribute('src', `space-raiders/shoot1.${audioType}`);
+    explodeSound2 = document.createElement('audio');
+    document.body.appendChild(explodeSound2);
+    explodeSound2.addEventListener('canplaythrough', itemLoaded);
+    explodeSound2.setAttribute('src', `space-raiders/explode1.${audioType}`);
+
+    explodeSound3 = document.createElement('audio');
+    document.body.appendChild(explodeSound3);
+    explodeSound3.addEventListener('canplaythrough', itemLoaded);
+    explodeSound3.setAttribute('src', `space-raiders/explode1.${audioType}`);
+
+    shootSound1 = document.createElement('audio');
+    document.body.appendChild(shootSound1);
+    shootSound1.addEventListener('canplaythrough', itemLoaded);
+    shootSound1.setAttribute('src', `space-raiders/shoot1.${audioType}`);
+
+    shootSound2 = document.createElement('audio');
+    document.body.appendChild(shootSound2);
+    shootSound2.addEventListener('canplaythrough', itemLoaded);
+    shootSound2.setAttribute('src', `space-raiders/shoot1.${audioType}`);
+
+    shootSound3 = document.createElement('audio');
+    document.body.appendChild(shootSound3);
+    shootSound3.addEventListener('canplaythrough', itemLoaded);
+    shootSound3.setAttribute('src', `space-raiders/shoot1.${audioType}`);
+
 
     alienImage = new Image();
     alienImage.src = 'alien.png';
@@ -94,7 +131,7 @@ function playSound(sound, volume) {
         while(!soundFound && soundIndex < sound.length) {
             let tSound = sounds[soundIndex];
 
-            if (tSound.ended) {
+            if (tSound && tSound.name === sound && (tSound.element.ended || !tSound.played)) {
                 soundFound = true;
             } else {
                 soundIndex++;
@@ -102,9 +139,8 @@ function playSound(sound, volume) {
         }
     }
     if (soundFound) {
-        const tempSound = sounds[soundIndex];
-        tempSound.setAttribute('src', sound + '.' + audioType);
-        tempSound.loop = false;
+        const tempSound = sounds[soundIndex].element;
+        sounds[soundIndex].played = true;
         tempSound.volume = volume;
         tempSound.play();
     } else if (sounds.length < MAX_SOUNDS) {
@@ -112,7 +148,7 @@ function playSound(sound, volume) {
         tempSound.setAttribute('src', sound + '.' + audioType);
         tempSound.volume = volume;
         tempSound.play();
-        sounds.push(tempSound);
+        sounds.push({ name: sound, element: tempSound, played: true });
     }
 }
 function startLevel() {
@@ -132,8 +168,6 @@ function startLevel() {
 
 function resetApp() {
     startLevel();
-    shootSound.volume = .5;
-    shootSound.volume = .5;
     appState = STATE_PLAYING;
 }
 
