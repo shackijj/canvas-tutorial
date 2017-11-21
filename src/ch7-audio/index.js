@@ -152,6 +152,8 @@ function playSound(sound, volume) {
     }
 }
 function startLevel() {
+    aliens.length = 0;
+    missiles.length = 0;
     const {width, height} = alienImage;
     for (let r = 0; r < ALIEN_ROWS; r++) {
         for(let c = 0; c < ALIEN_COLS; c++) {
@@ -228,6 +230,14 @@ function drawScreen() {
         }
 
         if (aliens.length <= 0) {
+            appState = STATE_RESET;
+        }
+    }
+
+    for (let j = aliens.length - 1; j >= 0; j--) {
+        const tempAlien = aliens[j];
+        if (hitTest(tempAlien, player)) {
+            playSound(SOUND_EXPLODE, .5);
             appState = STATE_RESET;
         }
     }
