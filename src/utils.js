@@ -11,4 +11,21 @@ function getRequestAnimationFrame() {
         requestAnimationFrameFallback;
 }
 
-export const requestAnimFrame = getRequestAnimationFrame();
+const requestAnimFrame = getRequestAnimationFrame();
+
+function FrameRateCounter() {
+    this.lastFrameCount = 0;
+    this.frameLast = Date.now();
+    this.frameCtr = 0;
+}
+
+FrameRateCounter.prototype.countFrames = function() {
+    this.frameCtr++;
+    if (Date.now() >= this.frameLast + 1000) {
+        this.lastFrameCount = this.frameCtr;
+        this.frameLast = Date.now();
+        this.frameCtr = 0;
+    }
+}
+
+export { FrameRateCounter, requestAnimFrame };
