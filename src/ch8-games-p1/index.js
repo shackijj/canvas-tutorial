@@ -201,6 +201,10 @@ function gameStateNewGame() {
     switchGameState(GAME_STATE_NEW_LEVEL);
 }
 
+function resetPlayer() {
+
+}
+
 function gameStateNewLevel() {
     rocks.length = 0;
     playerMissiles.length = 0;
@@ -255,6 +259,7 @@ function gameStateNewLevel() {
             rotation: 0,
         });
     }
+    resetPlayer();
     switchGameState(GAME_STATE_PLAYER_START);
 }
 function gameStatePlayerStart() {
