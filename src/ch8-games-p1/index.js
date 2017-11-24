@@ -2,14 +2,20 @@ import { FrameRateCounter } from '../utils';
 
 const frameRateCounter = new FrameRateCounter();
 
+const CANVAS_WIDTH = 400;
+const CANVAS_HEIGHT = 400;
+
 const container = document.getElementById('app');
 const theCanvas = document.createElement('canvas');
 
-theCanvas.setAttribute('width', 200);
-theCanvas.setAttribute('height', 200);
+theCanvas.setAttribute('width', CANVAS_WIDTH);
+theCanvas.setAttribute('height', CANVAS_HEIGHT);
 container.appendChild(theCanvas);
 
 const context = theCanvas.getContext('2d');
+
+let currentGameStateFunction = null;
+let currentGameState;
 
 const GAME_STATE_TITLE = 0;
 const GAME_STATE_NEW_GAME = 1;
@@ -18,6 +24,8 @@ const GAME_STATE_PLAYER_START = 3;
 const GAME_STATE_PLAY_LEVEL = 4;
 const GAME_STATE_PLAYER_DIE = 5;
 const GAME_STATE_GAME_OVER = 6;
+
+
 
 // Variables to control screen flow
 let titleStarted = false;
@@ -46,13 +54,25 @@ const ROCK_SCALE_LARGE = 1;
 const ROCK_SCALE_MEDIUM = 2;
 const ROCK_SCALE_SMALL = 3;
 
-const player = {};
+const player = {
+    maxVelocity: 5,
+    width: 20,
+    height: 20,
+    halfWidth: 10,
+    halfHeight: 10,
+    rotationVelocity: 5,
+    thrustAcceleration: .05,
+    missileFrameDelay: 5,
+    thrust: false
+};
+
 const rocks = [];
 const saucers = [];
 const playerMissiles = [];
 const particles = [];
 const saucerMissiles = [];
 
+let levelRockMaxSpeed = 0;
 let levelRockMaxSpeedAdjust = 1;
 let levelSaucerMax = 1;
 let levelSaucerOccurenceRate = 25;
@@ -90,6 +110,7 @@ function checkKeys() {
         const angleInRadians = rotation * Math.PI / 180;
         facingX = Math.cos(angleInRadians);
         facingY = Math.sin(angleInRadians);
+        shipState = 1;
         const movingXNew = movingX + thrustAcceleration * facingX;
         const movingYNew = movingY + thrustAcceleration * facingY;
         const currentVelocity = Math.sqrt(Math.pow(movingXNew, 2) + Math.pow(movingYNew, 2));
@@ -97,6 +118,8 @@ function checkKeys() {
             movingX = movingXNew;
             movingY = movingYNew;
         }
+    } else {
+        shipState = 0;
     }
     if (keyPressList[37] === true) {
         rotation -= rotationVelocity;
@@ -112,24 +135,21 @@ function update() {
     frameRateCounter.countFrames();
 }
 
-function render() {
-    shipState++;
-    if (shipState > 1) {
-        shipState = 0;
-    }
-    alpha += .01;
-    if (alpha > 1) {
-        alpha = 0;
-    }
+function fillBackground() {
     context.fillStyle = '#000000';
-    context.fillRect(0, 0, 200, 200);
+    context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
 
+function drawScoreboard() {
     context.fillStyle = '#ffffff';
     context.font = '20px sans-serif';
     context.textBaseline = 'top';
-    context.fillText(`FPS: ${frameRateCounter.lastFrameCount}`, 0, 180);
+    context.fillText(`FPS: ${frameRateCounter.lastFrameCount}`, 0, 0);
+    context.fillText(`Score: ${frameRateCounter.lastFrameCount}`, 90, 0);
+    context.fillText(`Ships: ${frameRateCounter.lastFrameCount}`, 200, 0);
+}
 
-    context.globalAlpha = alpha;
+function renderPlayer() {
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.translate(x + .5 * width, y + .5 * width);
@@ -147,38 +167,135 @@ function render() {
     context.lineTo(-10, -10);
     context.stroke();
     context.closePath();
-    context.restore();
 
-/*     if (shipState === 1) {
-        context.beginPath();
-        context.moveTo(8, 13);
-        context.lineTo(11, 13);
-        context.moveTo(9, 14);
-        context.lineTo(9, 18);
-        context.moveTo(10, 14);
-        context.lineTo(10, 18);
-        context.stroke();
-        context.closePath();
-    } */
+    context.restore();
 }
 
 function gameStatePlayLevel() {
     checkKeys();
+    fillBackground();
     update();
-    render();
+    renderPlayer();
+    drawScoreboard();
 }
 
-function gameStateTitle() {}
-function gameStateNewGame() {}
-function gameStateNewLevel() {}
-function gameStatePlayerStart() {}
+function checkTitleKeys() {
+    if (keyPressList[13] === true) {
+        switchGameState(GAME_STATE_NEW_GAME);
+    }
+}
+
+function gameStateTitle() {
+    checkTitleKeys();
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    context.fillStyle = '#ffffff';
+    context.font = '20px sans-serif';
+    context.textBaseline = 'top';
+    context.fillText('Geo Blaster Basic', 120, 100);
+    context.font = '15px sans-serif';
+    context.fillText('Press enter to start', 135, 140);
+}
+
+function gameStateNewGame() {
+    switchGameState(GAME_STATE_NEW_LEVEL);
+}
+
+function gameStateNewLevel() {
+    rocks.length = 0;
+    playerMissiles.length = 0;
+    saucerMissiles.length = 0;
+    particles.length = 0;
+    saucers.length = 0;
+
+    level++;
+
+    levelRockMaxSpeedAdjust = level * .25;
+
+    if (levelRockMaxSpeedAdjust > 3) {
+        levelRockMaxSpeed = 3;
+    }
+    levelSaucerMax = 1 + Math.floor(level / 10);
+    levelSaucerOccurenceRate = 10 + 3 * level;
+    if (levelSaucerOccurenceRate > 35) {
+        levelSaucerOccurenceRate = 35;
+    }
+
+    levelSaucerSpeed = 1 + .5 * level;
+    if (levelSaucerSpeed > 5) {
+        levelSaucerSpeed = 5;
+    }
+    levelSaucerFireDelay = 120 - 10 * level;
+    if (levelSaucerFireDelay<20) {
+        levelSaucerFireDelay=20;
+    }
+    
+    levelSaucerFireRate = 20 + 3 * level;
+    if (levelSaucerFireRate < 50) {
+        levelSaucerFireRate = 50;
+    }
+    
+    levelSaucerMissileSpeed = 1 + .2 * level;
+    if (levelSaucerMissileSpeed > 4){
+        levelSaucerMissileSpeed = 4;
+    }
+    for(let newRockCnt = 0; newRockCnt < level + 3; newRockCnt++) {
+        rocks.push({
+            scale: 1,
+            width: 50,
+            height: 50,
+            halfHeight: 25,
+            halfWidth: 25,
+            x: Math.floor(Math.random() * 50),
+            y: Math.floor(Math.random() * 50),
+            dx: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
+            dy: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
+            rotationInc: ((Math.random() * 5) + 1) * ((Math.random() < .5) ? -1 : 1),
+            scoreValue: bigRockScore,
+            rotation: 0,
+        });
+    }
+    switchGameState(GAME_STATE_PLAYER_START);
+}
+function gameStatePlayerStart() {
+    switchGameState(GAME_STATE_PLAY_LEVEL);
+}
 function gameStatePlayerDie() {}
 function gameStateGameOver() {}
+
+function switchGameState(newState) {
+    currentGameState = newState;
+    switch(currentGameState) {
+        case GAME_STATE_TITLE:
+            currentGameStateFunction = gameStateTitle;
+            break;
+        case GAME_STATE_NEW_LEVEL:
+            currentGameStateFunction = gameStateNewLevel;
+            break;
+        case GAME_STATE_NEW_GAME:
+            currentGameStateFunction = gameStateNewGame;
+            break;
+        case GAME_STATE_PLAYER_DIE:
+            currentGameStateFunction = gameStatePlayerDie;
+            break;
+        case GAME_STATE_GAME_OVER:
+            currentGameStateFunction = gameStateGameOver;
+            break;
+        case GAME_STATE_PLAY_LEVEL:
+            currentGameStateFunction = gameStatePlayLevel;
+            break;
+        case GAME_STATE_PLAYER_START:
+            currentGameStateFunction = gameStatePlayLevel;
+            break;
+    }
+}
+
+switchGameState(GAME_STATE_TITLE);
 
 const FRAME_RATE = 30;
 const INTERVAL_TIME = 1000 / FRAME_RATE;
 function gameLoop() {
-    gameStatePlayLevel();
+    currentGameStateFunction();
     window.setTimeout(gameLoop, INTERVAL_TIME);
 }
 
