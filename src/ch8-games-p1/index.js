@@ -57,6 +57,10 @@ const ROCK_SCALE_SMALL = 3;
 const player = {
     maxVelocity: 5,
     width: 20,
+    dx: 0,
+    dy: 0,
+    x: 50,
+    y: 50,
     height: 20,
     halfWidth: 10,
     halfHeight: 10,
@@ -91,12 +95,6 @@ let x = 50;
 let y = 50;
 let alpha = 0;
 
-let facingX = 0;
-let facingY = 0;
-let movingX = 0;
-let movingY = 0;
-const maxVelocity = 2;
-
 const keyPressList = [];
 document.addEventListener('keydown', function(e) {
     keyPressList[e.keyCode] = true;
@@ -107,32 +105,61 @@ document.addEventListener('keyup', function(e) {
 
 function checkKeys() {
     if (keyPressList[38] === true) {
-        const angleInRadians = rotation * Math.PI / 180;
-        facingX = Math.cos(angleInRadians);
-        facingY = Math.sin(angleInRadians);
+        const angleInRadians = player.rotation * Math.PI / 180;
+        const facingX = Math.cos(angleInRadians);
+        const facingY = Math.sin(angleInRadians);
         shipState = 1;
-        const movingXNew = movingX + thrustAcceleration * facingX;
-        const movingYNew = movingY + thrustAcceleration * facingY;
+        const movingXNew = player.dx + player.thrustAcceleration * facingX;
+        const movingYNew = player.dy + player.thrustAcceleration * facingY;
         const currentVelocity = Math.sqrt(Math.pow(movingXNew, 2) + Math.pow(movingYNew, 2));
-        if (currentVelocity < maxVelocity) {
-            movingX = movingXNew;
-            movingY = movingYNew;
+        if (currentVelocity < player.maxVelocity) {
+            player.dx = movingXNew;
+            player.dy = movingYNew;
         }
     } else {
         shipState = 0;
     }
     if (keyPressList[37] === true) {
-        rotation -= rotationVelocity;
+        player.rotation -= player.rotationVelocity;
     }
     if (keyPressList[39] === true) {
-        rotation += rotationVelocity;
+        player.rotation += player.rotationVelocity;
     }
 }
 
-function update() {
-    x = x + movingX;
-    y = y + movingY;
+function updatePlayer() {
+    testWallsAndMove(player);
     frameRateCounter.countFrames();
+}
+
+function testWallsAndMove(obj) {
+    const {x, dx, y, dy, halfHeight, halfWidth} = obj;
+    const nextX = x + dx;
+    const nextY = y + dy;
+    if (nextX + halfWidth > xMax) {
+        obj.dx *= -1;
+        obj.x = xMax - halfWidth;
+    } else if (nextX + halfWidth < xMin) {
+        obj.dx *= -1;
+        obj.x = -halfWidth;
+    } else if (nextY + halfHeight > yMax) {
+        obj.dy *= -1;
+        obj.y = yMax - halfHeight;
+    } else if (nextY + halfHeight < yMin) {
+        obj.dy *= -1;
+        obj.y = - halfHeight;
+    } else {
+        obj.x += dx;
+        obj.y += dy;
+    }
+}
+
+function updateRocks() {
+    rocks.forEach((rock) => {
+        const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
+        testWallsAndMove(rock);
+        rock.rotation += rotationInc;
+    });
 }
 
 function fillBackground() {
@@ -150,9 +177,10 @@ function drawScoreboard() {
 }
 
 function renderPlayer() {
+    const {x, y, halfWidth, halfHeight, rotation} = player;
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
-    context.translate(x + .5 * width, y + .5 * width);
+    context.translate(x + halfWidth, y + halfHeight);
     const angleInRadians = rotation * Math.PI / 180;
     context.rotate(angleInRadians);
 
@@ -171,11 +199,34 @@ function renderPlayer() {
     context.restore();
 }
 
+function renderRocks() {
+    rocks.forEach((rock) => {
+        const {x, y, halfHeight, halfWidth, rotation} = rock;
+        context.save();
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.translate(x + halfWidth, y + halfHeight);
+        const angleInRadians = rotation * Math.PI / 180;
+        context.rotate(angleInRadians);
+        context.strokeStyle = '#ffffff';
+        context.beginPath();
+        context.moveTo(-25, -25);
+        context.lineTo(25, -25);
+        context.lineTo(25, 25);
+        context.lineTo(-25, 25);
+        context.lineTo(-25, -25);
+        context.stroke();
+        context.closePath();
+        context.restore();
+    });
+}
+
 function gameStatePlayLevel() {
     checkKeys();
     fillBackground();
-    update();
+    updatePlayer();
+    updateRocks();
     renderPlayer();
+    renderRocks();
     drawScoreboard();
 }
 
