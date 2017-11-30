@@ -136,18 +136,18 @@ function testWallsAndMove(obj) {
     const {x, dx, y, dy, halfHeight, halfWidth} = obj;
     const nextX = x + dx;
     const nextY = y + dy;
-    if (nextX + halfWidth > xMax) {
+    if (nextX + 2 * halfWidth > xMax) {
         obj.dx *= -1;
-        obj.x = xMax - halfWidth;
-    } else if (nextX + halfWidth < xMin) {
+        obj.x = xMax - 2 * halfWidth;
+    } else if (nextX < xMin) {
         obj.dx *= -1;
-        obj.x = -halfWidth;
-    } else if (nextY + halfHeight > yMax) {
+        obj.x = xMin;
+    } else if (nextY + 2 * halfHeight > yMax) {
         obj.dy *= -1;
-        obj.y = yMax - halfHeight;
-    } else if (nextY + halfHeight < yMin) {
+        obj.y = yMax - 2 * halfHeight;
+    } else if (nextY < yMin) {
         obj.dy *= -1;
-        obj.y = - halfHeight;
+        obj.y = yMin;
     } else {
         obj.x += dx;
         obj.y += dy;
@@ -237,7 +237,8 @@ function checkTitleKeys() {
 }
 
 function gameStateTitle() {
-    checkTitleKeys();
+    // checkTitleKeys();
+    switchGameState(GAME_STATE_NEW_GAME);
     context.fillStyle = '#000000';
     context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     context.fillStyle = '#ffffff';
