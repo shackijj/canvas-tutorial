@@ -64,6 +64,7 @@ const player = {
     height: 20,
     halfWidth: 10,
     halfHeight: 10,
+    rotation: 0,
     rotationVelocity: 5,
     thrustAcceleration: .05,
     missileFrameDelay: 5,
@@ -86,7 +87,6 @@ let levelSaucerFireRate = 30;
 let levelSaucerMissileSpeed = 1;
 
 let shipState = 0;
-let rotation = 0;
 const rotationVelocity = 1;
 const thrustAcceleration = .03;
 const width = 20;
