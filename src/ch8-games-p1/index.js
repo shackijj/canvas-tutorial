@@ -68,7 +68,8 @@ const player = {
     rotationVelocity: 5,
     thrustAcceleration: .05,
     missileFrameDelay: 5,
-    thrust: false
+    thrust: false,
+    missileSpeed: 3,
 };
 
 const rocks = [];
@@ -125,6 +126,18 @@ function checkKeys() {
     if (keyPressList[39] === true) {
         player.rotation += player.rotationVelocity;
     }
+    // space
+    if (keyPressList[32] === true) {
+        const angleInRadians = player.rotation * Math.PI / 180;
+        playerMissiles.push({
+            x: player.x + player.halfWidth,  
+            y: player.y + player.halfHeight,
+            halfWidth: 1,
+            halfHeight: 1, 
+            dx: Math.cos(angleInRadians) * player.missileSpeed,
+            dy: Math.sin(angleInRadians) * player.missileSpeed,
+        });
+    }
 }
 
 function updatePlayer() {
@@ -176,6 +189,40 @@ function drawScoreboard() {
     context.fillText(`Ships: ${frameRateCounter.lastFrameCount}`, 200, 0);
 }
 
+function updateMissiles() {
+    for(let i = playerMissiles.length - 1; i >= 0; i--) {
+        const missile = playerMissiles[i];
+        if (missile.x > xMax || missile.x < xMin || missile.y > yMax || missile.y < yMin) {
+            playerMissiles.splice(i, 1);
+        }
+        missile.x += missile.dx;
+        missile.y += missile.dy;
+    }
+}
+
+function renderPlayerMissiles() {
+    playerMissiles.forEach((missile) => {
+        const {x, y, halfWidth, halfHeight, rotation} = missile;
+        context.save();
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.translate(x + halfWidth, y + halfHeight);
+        const angleInRadians = rotation * Math.PI / 180;
+        context.rotate(angleInRadians);
+    
+        context.strokeStyle = '#ffffff';
+        context.beginPath();
+        context.moveTo(-1, -1);
+        context.lineTo(1, -1);
+        context.lineTo(1, 1);
+        context.lineTo(-1, 1);
+        context.lineTo(-1, -1);
+        context.stroke();
+        context.closePath();
+    
+        context.restore();
+    })
+}
+
 function renderPlayer() {
     const {x, y, halfWidth, halfHeight, rotation} = player;
     context.save();
@@ -225,8 +272,10 @@ function gameStatePlayLevel() {
     fillBackground();
     updatePlayer();
     updateRocks();
+    updateMissiles();
     renderPlayer();
     renderRocks();
+    renderPlayerMissiles();
     drawScoreboard();
 }
 
