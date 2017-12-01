@@ -69,7 +69,8 @@ const player = {
     thrustAcceleration: .05,
     missileFrameDelay: 5,
     thrust: false,
-    missileSpeed: 3,
+    missileSpeed: 5,
+    lastFrameCount: 0,
 };
 
 const rocks = [];
@@ -127,13 +128,18 @@ function checkKeys() {
         player.rotation += player.rotationVelocity;
     }
     // space
-    if (keyPressList[32] === true) {
+    const frameDelay = frameRateCounter.frameCtr - player.lastFrameCount;
+    if (keyPressList[32] === true &&
+        (frameDelay> player.missileFrameDelay || frameDelay < 0)) {
+        player.lastFrameCount = frameRateCounter.frameCtr;
         const angleInRadians = player.rotation * Math.PI / 180;
         playerMissiles.push({
             x: player.x + player.halfWidth,  
             y: player.y + player.halfHeight,
             halfWidth: 1,
-            halfHeight: 1, 
+            halfHeight: 1,
+            width: 2,
+            height: 2,
             dx: Math.cos(angleInRadians) * player.missileSpeed,
             dy: Math.sin(angleInRadians) * player.missileSpeed,
         });
@@ -187,6 +193,39 @@ function drawScoreboard() {
     context.fillText(`FPS: ${frameRateCounter.lastFrameCount}`, 0, 0);
     context.fillText(`Score: ${frameRateCounter.lastFrameCount}`, 90, 0);
     context.fillText(`Ships: ${frameRateCounter.lastFrameCount}`, 200, 0);
+}
+
+function hitTest(obj1, obj2) {
+    const o1Left = obj1.x;
+    const o1Top = obj1.y;
+    const o1Bottom = obj1.y + obj1.height;
+    const o1Right = obj1.x + obj1.width;
+
+    const o2Left = obj2.x;
+    const o2Top = obj2.y;
+    const o2Bottom = obj2.y + obj2.height;
+    const o2Right = obj2.x + obj2.width;
+
+    let rc = false
+    if ((o1Right < o2Left) || (o1Bottom < o2Top) || (o1Left > o2Right) || (o1Top > o2Bottom)) {
+        rc = false;
+    } else {
+        rc = true;
+    }
+    return rc;
+}
+
+function checkCollisions() {
+    missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
+        const missile = playerMissiles[i];
+        for(let j = rocks.length - 1; j >= 0; j--) {
+            if (hitTest(missile, rocks[j])) {
+                rocks.splice(j, 1);
+                playerMissiles.splice(i, 1);
+                break missile;
+            }
+        }
+    }
 }
 
 function updateMissiles() {
@@ -276,6 +315,7 @@ function gameStatePlayLevel() {
     renderPlayer();
     renderRocks();
     renderPlayerMissiles();
+    checkCollisions();
     drawScoreboard();
 }
 
