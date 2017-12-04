@@ -245,11 +245,11 @@ function checkRocks() {
             if (hitTest(missile, rock)) {
                 rocks.splice(j, 1);
                 playerMissiles.splice(i, 1);
-                const width = rock.width * 0.5;
-                const height = rock.height * 0.5;
-                const halfWidth = width * 0.5;
-                const halfHeight = height * 0.5;
                 const scale = rock.scale / 2;
+                const width = rock.width * scale;
+                const height = rock.height * scale;
+                const halfWidth = width * scale;
+                const halfHeight = height * scale;
                 const newRock1 = Object.assign({}, rock, {
                     scale,
                     width,
