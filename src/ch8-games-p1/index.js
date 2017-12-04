@@ -59,8 +59,8 @@ const player = {
     width: 20,
     dx: 0,
     dy: 0,
-    x: 50,
-    y: 50,
+    x: 200,
+    y: 380,
     height: 20,
     halfWidth: 10,
     halfHeight: 10,
@@ -93,8 +93,8 @@ const rotationVelocity = 1;
 const thrustAcceleration = .03;
 const width = 20;
 const height = 20;
-let x = 50;
-let y = 50;
+let x = 400;
+let y = 200;
 let alpha = 0;
 
 const keyPressList = [];
@@ -219,10 +219,6 @@ function randomDirection(d) {
     return d * ((Math.random() < .5) ? -1 : 1);
 }
 
-function checkCollisions() {
-    checkParticales();
-    checkRocks();
-}
 
 function checkParticales() {
     missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
@@ -241,7 +237,7 @@ function checkRocks() {
     missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
         const missile = playerMissiles[i];
         for(let j = rocks.length - 1; j >= 0; j--) {
-            const rock = rocks[i];
+            const rock = rocks[j];
             if (hitTest(missile, rock)) {
                 rocks.splice(j, 1);
                 playerMissiles.splice(i, 1);
@@ -256,8 +252,8 @@ function checkRocks() {
                     height,
                     halfWidth,
                     halfHeight,
-                    dx: randomDirection(rock.dx),
-                    dy: randomDirection(rock.dy)
+                    dx: rock.dx * -1,
+                    dy: rock.dy
                 });
                 const newRock2 = Object.assign({}, rock, {
                     scale,
@@ -265,10 +261,10 @@ function checkRocks() {
                     height,
                     halfWidth,
                     halfHeight,
-                    dx: randomDirection(rock.dx),
-                    dy: randomDirection(rock.dy),
+                    dx: rock.dx,
+                    dy: rock.dy * -1,
                 });
-                if (scale > 0.25) {
+                if (scale >= 0.25) {
                     rocks.push(newRock1);
                     rocks.push(newRock2);
                 } else {
@@ -280,6 +276,30 @@ function checkRocks() {
         }
     }
 }
+
+function checkPlayer() {
+    for (let i = rocks.length - 1; i >= 0; i--) {
+        const rock = rocks[i];
+        if (hitTest(player, rock)) {
+            switchGameState(GAME_STATE_NEW_GAME);
+            return;
+        }
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const particles = particles[i];
+        if (hitTest(player, particles)) {
+            switchGameState(GAME_STATE_NEW_GAME);
+            return;
+        }
+    }
+}
+
+function checkCollisions() {
+    checkRocks();
+    checkParticales();
+    checkPlayer();
+}
+
 
 function updateMissiles() {
     for(let i = playerMissiles.length - 1; i >= 0; i--) {
