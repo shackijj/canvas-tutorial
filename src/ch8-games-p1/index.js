@@ -215,13 +215,66 @@ function hitTest(obj1, obj2) {
     return rc;
 }
 
+function randomDirection(d) {
+    return d * ((Math.random() < .5) ? -1 : 1);
+}
+
 function checkCollisions() {
+    checkParticales();
+    checkRocks();
+}
+
+function checkParticales() {
+    missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
+        const missile = playerMissiles[i];
+        for(let j = particles.length - 1; j >= 0; j--) {
+            if (hitTest(missile, particles[j])) {
+                particles.splice(j, 1);
+                playerMissiles.splice(i, 1);
+                break missile;
+            }
+        }
+    }
+}
+
+function checkRocks() {
     missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
         const missile = playerMissiles[i];
         for(let j = rocks.length - 1; j >= 0; j--) {
-            if (hitTest(missile, rocks[j])) {
+            const rock = rocks[i];
+            if (hitTest(missile, rock)) {
                 rocks.splice(j, 1);
                 playerMissiles.splice(i, 1);
+                const width = rock.width * 0.5;
+                const height = rock.height * 0.5;
+                const halfWidth = width * 0.5;
+                const halfHeight = height * 0.5;
+                const scale = rock.scale / 2;
+                const newRock1 = Object.assign({}, rock, {
+                    scale,
+                    width,
+                    height,
+                    halfWidth,
+                    halfHeight,
+                    dx: randomDirection(rock.dx),
+                    dy: randomDirection(rock.dy)
+                });
+                const newRock2 = Object.assign({}, rock, {
+                    scale,
+                    width,
+                    height,
+                    halfWidth,
+                    halfHeight,
+                    dx: randomDirection(rock.dx),
+                    dy: randomDirection(rock.dy),
+                });
+                if (scale > 0.25) {
+                    rocks.push(newRock1);
+                    rocks.push(newRock2);
+                } else {
+                    particles.push(newRock1);
+                    particles.push(newRock2);
+                }
                 break missile;
             }
         }
@@ -287,7 +340,7 @@ function renderPlayer() {
 
 function renderRocks() {
     rocks.forEach((rock) => {
-        const {x, y, halfHeight, halfWidth, rotation} = rock;
+        const {x, y, halfHeight, halfWidth, rotation, scale} = rock;
         context.save();
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.translate(x + halfWidth, y + halfHeight);
@@ -295,11 +348,11 @@ function renderRocks() {
         context.rotate(angleInRadians);
         context.strokeStyle = '#ffffff';
         context.beginPath();
-        context.moveTo(-25, -25);
-        context.lineTo(25, -25);
-        context.lineTo(25, 25);
-        context.lineTo(-25, 25);
-        context.lineTo(-25, -25);
+        context.moveTo(-25 * scale, -25 * scale);
+        context.lineTo(25 * scale, -25 * scale);
+        context.lineTo(25 * scale, 25 * scale);
+        context.lineTo(-25 * scale, 25 * scale);
+        context.lineTo(-25 * scale, -25 * scale);
         context.stroke();
         context.closePath();
         context.restore();
