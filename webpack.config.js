@@ -25,6 +25,15 @@ module.exports = {
             {
                 test: /Box2D.js$/,
                 use: [ 'script-loader' ]
+            },
+            {
+                test: /\.(png|jpg|gif)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {}  
+                    }
+                ]
             }
         ]
     },
