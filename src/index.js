@@ -1,3 +1,3 @@
-import { canvasApp } from './ch8-games-p1';
+import { canvasApp } from './ch9-games-p2';
 
 window.addEventListener('load', canvasApp);
