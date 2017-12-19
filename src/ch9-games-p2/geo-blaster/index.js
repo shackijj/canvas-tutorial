@@ -84,11 +84,11 @@ const player = {
     lastFrameCount: 0,
 };
 
-const rocks = [];
-const saucers = [];
-const playerMissiles = [];
-const particles = [];
-const saucerMissiles = [];
+let rocks = [];
+let saucers = [];
+let playerMissiles = [];
+let particles = [];
+let saucerMissiles = [];
 
 let levelRockMaxSpeed = 0;
 let levelRockMaxSpeedAdjust = 1;
@@ -190,12 +190,15 @@ function testWallsAndMove(obj) {
     }
 }
 
+function updateRock(rock) {
+    const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
+    testWallsAndMove(rock);
+    rock.rotation += rotationInc;
+}
+
 function updateRocks() {
-    rocks.forEach((rock) => {
-        const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
-        testWallsAndMove(rock);
-        rock.rotation += rotationInc;
-    });
+    rocks.forEach(updateRock);
+    particles.forEach(updateRock);
 }
 
 function fillBackground() {
@@ -258,13 +261,20 @@ function checkRocks() {
             if (hitTest(missile, rock)) {
                 rocks.splice(j, 1);
                 playerMissiles.splice(i, 1);
-                const scale = rock.scale / 2;
-                const width = rock.width * scale;
-                const height = rock.height * scale;
-                const halfWidth = width * scale;
-                const halfHeight = height * scale;
+                let newWidth;
+                switch(rock.width) {
+                    case 50:
+                        newWidth = 30;
+                        break;
+                    case 30:
+                        newWidth = 20;
+                        break;
+                }
+                const width = newWidth;
+                const height = newWidth;
+                const halfWidth = newWidth / 2;
+                const halfHeight = newWidth / 2;
                 const newRock1 = Object.assign({}, rock, {
-                    scale,
                     width,
                     height,
                     halfWidth,
@@ -273,7 +283,6 @@ function checkRocks() {
                     dy: rock.dy
                 });
                 const newRock2 = Object.assign({}, rock, {
-                    scale,
                     width,
                     height,
                     halfWidth,
@@ -281,12 +290,13 @@ function checkRocks() {
                     dx: rock.dx,
                     dy: rock.dy * -1,
                 });
-                if (scale >= 0.25) {
-                    rocks.push(newRock1);
-                    rocks.push(newRock2);
-                } else {
+                if (newWidth == 20) {
                     particles.push(newRock1);
                     particles.push(newRock2);
+                    console.log(particles);
+                } else {
+                    rocks.push(newRock1);
+                    rocks.push(newRock2);
                 }
                 break missile;
             }
@@ -298,6 +308,7 @@ function checkPlayer() {
     for (let i = rocks.length - 1; i >= 0; i--) {
         const rock = rocks[i];
         if (hitTest(player, rock)) {
+            console.log('HIT The Rock');
             switchGameState(GAME_STATE_NEW_GAME);
             return;
         }
@@ -305,6 +316,8 @@ function checkPlayer() {
     for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
         if (hitTest(player, particle)) {
+            console.log('HIT The particle');
+            console.log(player, particle);
             switchGameState(GAME_STATE_NEW_GAME);
             return;
         }
@@ -358,7 +371,6 @@ function renderPlayer() {
 
     const sourceX = Math.floor((player.rotation / 10) % 10) * 32;
     const sourceY = Math.floor((player.rotation / 10) / 10) * 32;
-    console.log(sourceX, sourceY);
     if (player.thrust) {
         context.drawImage(shipTiles2, sourceX, sourceY, 32, 32,
             player.x, player.y, 32, 32);
@@ -370,25 +382,28 @@ function renderPlayer() {
     context.restore();
 }
 
+function renderRock(rock) {
+    const {x, y, halfHeight, halfWidth, rotation, scale} = rock;
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.translate(x + halfWidth, y + halfHeight);
+    const angleInRadians = rotation * Math.PI / 180;
+    context.rotate(angleInRadians);
+    context.strokeStyle = '#ffffff';
+    context.beginPath();
+    context.moveTo(-1 * halfWidth, -1 * halfWidth);
+    context.lineTo(halfWidth, -1 * halfWidth);
+    context.lineTo(halfWidth, halfWidth);
+    context.lineTo(-1 * halfHeight, halfHeight);
+    context.lineTo(-1 * halfWidth, -1 * halfWidth);
+    context.stroke();
+    context.closePath();
+    context.restore();
+}
+
 function renderRocks() {
-    rocks.forEach((rock) => {
-        const {x, y, halfHeight, halfWidth, rotation, scale} = rock;
-        context.save();
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.translate(x + halfWidth, y + halfHeight);
-        const angleInRadians = rotation * Math.PI / 180;
-        context.rotate(angleInRadians);
-        context.strokeStyle = '#ffffff';
-        context.beginPath();
-        context.moveTo(-25 * scale, -25 * scale);
-        context.lineTo(25 * scale, -25 * scale);
-        context.lineTo(25 * scale, 25 * scale);
-        context.lineTo(-25 * scale, 25 * scale);
-        context.lineTo(-25 * scale, -25 * scale);
-        context.stroke();
-        context.closePath();
-        context.restore();
-    });
+    rocks.forEach(renderRock);
+    particles.forEach(renderRock);
 }
 
 function gameStatePlayLevel() {
@@ -424,6 +439,9 @@ function gameStateTitle() {
 }
 
 function gameStateNewGame() {
+    level = 0;
+    score = 0;
+    playerShips = 0;
     switchGameState(GAME_STATE_NEW_LEVEL);
 }
 
@@ -436,11 +454,11 @@ function resetPlayer() {
 
 function gameStateNewLevel() {
     resetPlayer();
-    rocks.length = 0;
-    playerMissiles.length = 0;
-    saucerMissiles.length = 0;
-    particles.length = 0;
-    saucers.length = 0;
+    rocks = [];
+    playerMissiles = [];
+    saucerMissiles = [];
+    particles = [];
+    saucers = [];
 
     level++;
 
