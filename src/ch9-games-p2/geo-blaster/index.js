@@ -67,14 +67,16 @@ const ROCK_SCALE_SMALL = 3;
 
 const player = {
     maxVelocity: 5,
-    width: 20,
     dx: 0,
     dy: 0,
     x: 200,
     y: 380,
-    height: 20,
+    width: 32,
+    height: 32,
     halfWidth: 10,
     halfHeight: 10,
+    hitWidth: 24,
+    hitHeight: 24,
     rotation: 0,
     rotationVelocity: 5,
     thrustAcceleration: .05,
@@ -157,6 +159,8 @@ function checkKeys() {
             halfHeight: 1,
             width: 2,
             height: 2,
+            hitHeight: 2,
+            hitWidth: 2,
             dx: Math.cos(angleInRadians) * player.missileSpeed,
             dy: Math.sin(angleInRadians) * player.missileSpeed,
         });
@@ -218,13 +222,13 @@ function drawScoreboard() {
 function hitTest(obj1, obj2) {
     const o1Left = obj1.x;
     const o1Top = obj1.y;
-    const o1Bottom = obj1.y + obj1.height;
-    const o1Right = obj1.x + obj1.width;
+    const o1Bottom = obj1.y + obj1.hitHeight;
+    const o1Right = obj1.x + obj1.hitWidth;
 
     const o2Left = obj2.x;
     const o2Top = obj2.y;
-    const o2Bottom = obj2.y + obj2.height;
-    const o2Right = obj2.x + obj2.width;
+    const o2Bottom = obj2.y + obj2.hitHeight;
+    const o2Right = obj2.x + obj2.hitWidth;
 
     let rc = false
     if ((o1Right < o2Left) || (o1Bottom < o2Top) || (o1Left > o2Right) || (o1Top > o2Bottom)) {
@@ -274,26 +278,24 @@ function checkRocks() {
                 const height = newWidth;
                 const halfWidth = newWidth / 2;
                 const halfHeight = newWidth / 2;
+                const hitHeight = newWidth;
+                const hitWidth = newWidth;
                 const newRock1 = Object.assign({}, rock, {
                     width,
                     height,
                     halfWidth,
                     halfHeight,
+                    hitHeight,
+                    hitWidth,
                     dx: rock.dx * -1,
                     dy: rock.dy
                 });
-                const newRock2 = Object.assign({}, rock, {
-                    width,
-                    height,
-                    halfWidth,
-                    halfHeight,
-                    dx: rock.dx,
+                const newRock2 = Object.assign({}, newRock1, {
                     dy: rock.dy * -1,
                 });
                 if (newWidth == 20) {
                     particles.push(newRock1);
                     particles.push(newRock2);
-                    console.log(particles);
                 } else {
                     rocks.push(newRock1);
                     rocks.push(newRock2);
@@ -308,7 +310,6 @@ function checkPlayer() {
     for (let i = rocks.length - 1; i >= 0; i--) {
         const rock = rocks[i];
         if (hitTest(player, rock)) {
-            console.log('HIT The Rock');
             switchGameState(GAME_STATE_NEW_GAME);
             return;
         }
@@ -316,8 +317,6 @@ function checkPlayer() {
     for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
         if (hitTest(player, particle)) {
-            console.log('HIT The particle');
-            console.log(player, particle);
             switchGameState(GAME_STATE_NEW_GAME);
             return;
         }
@@ -496,6 +495,8 @@ function gameStateNewLevel() {
             scale: 1,
             width: 50,
             height: 50,
+            hitHeight: 50,
+            hitWidth: 50,
             halfHeight: 25,
             halfWidth: 25,
             x: Math.floor(Math.random() * 50),
