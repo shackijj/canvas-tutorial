@@ -8,7 +8,7 @@ import shipTiles2Src from './ship_tiles2.png';
 let parts = new Image();
 let shipTiles = new Image();
 let shipTiles2 = new Image();
-let saucer = new Image();
+let saucerTiles = new Image();
 
 
 const frameRateCounter = new FrameRateCounter();
@@ -100,6 +100,7 @@ let levelSaucerSpeed = 1;
 let levelSaucerFireDelay = 300;
 let levelSaucerFireRate = 30;
 let levelSaucerMissileSpeed = 1;
+let levelSaucerCreated = 0;
 
 let shipState = 0;
 const rotationVelocity = 1;
@@ -194,10 +195,37 @@ function testWallsAndMove(obj) {
     }
 }
 
+function createSaucer() {
+    if (levelSaucerCreated >= levelSaucerMax) {
+        return;
+    }
+
+    if (Math.random() * 100 < levelSaucerOccurenceRate) {
+        levelSaucerCreated++;
+        const saucer = {
+            width: 30,
+            height: 15,
+            hitHeight: 30,
+            hitWidth: 15,
+            halfHeight: 15,
+            halfWidth: 7,
+            x: Math.floor(Math.random() * 50),
+            y: Math.floor(Math.random() * 50),
+            dx: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
+            dy: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
+        };
+        saucers.push(saucer);
+    }
+}
+
 function updateRock(rock) {
     const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
     testWallsAndMove(rock);
     rock.rotation += rotationInc;
+}
+
+function updateSaucers() {
+    saucers.forEach(testWallsAndMove);
 }
 
 function updateRocks() {
@@ -250,6 +278,19 @@ function checkParticales() {
         for(let j = particles.length - 1; j >= 0; j--) {
             if (hitTest(missile, particles[j])) {
                 particles.splice(j, 1);
+                playerMissiles.splice(i, 1);
+                break missile;
+            }
+        }
+    }
+}
+
+function checkSaucers() {
+    missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
+        const missile = playerMissiles[i];
+        for(let j = saucers.length - 1; j >= 0; j--) {
+            if (hitTest(missile, saucers[j])) {
+                saucers.splice(j, 1);
                 playerMissiles.splice(i, 1);
                 break missile;
             }
@@ -325,6 +366,7 @@ function checkPlayer() {
 
 function checkCollisions() {
     checkRocks();
+    checkSaucers();
     checkParticales();
     checkPlayer();
 }
@@ -381,6 +423,17 @@ function renderPlayer() {
     context.restore();
 }
 
+function renderSaucers() {
+    for(let i = saucers.length - 1; i >= 0; i--) {
+        const saucer = saucers[i];
+        context.save();
+        const sourceX = 0;
+        const sourceY = 0;
+        context.drawImage(saucerTiles, sourceX, sourceY, 30, 15, saucer.x, saucer.y, 30, 15);
+        context.restore();
+    }
+}
+
 function renderRock(rock) {
     const {x, y, halfHeight, halfWidth, rotation, scale} = rock;
     context.save();
@@ -408,11 +461,14 @@ function renderRocks() {
 function gameStatePlayLevel() {
     checkKeys();
     fillBackground();
+    createSaucer();
     updatePlayer();
     updateRocks();
     updateMissiles();
+    updateSaucers();
     renderPlayer();
     renderRocks();
+    renderSaucers();
     renderPlayerMissiles();
     checkCollisions();
     drawScoreboard();
@@ -458,6 +514,8 @@ function gameStateNewLevel() {
     saucerMissiles = [];
     particles = [];
     saucers = [];
+
+    levelSaucerCreated = 0;
 
     level++;
 
@@ -560,7 +618,6 @@ export function canvasApp() {
     function itemLoaded() {
         itemsLoaded++;
         if (itemsLoaded >= itemsToLoad) {
-            console.log('here');
             gameLoop();
         }
     }
@@ -571,6 +628,6 @@ export function canvasApp() {
     shipTiles.src = shipTilesSrc;
     shipTiles2.addEventListener('load', itemLoaded);
     shipTiles2.src = shipTiles2Src;
-    saucer.addEventListener('load', itemLoaded);
-    saucer.src = saucerSrc;
+    saucerTiles.addEventListener('load', itemLoaded);
+    saucerTiles.src = saucerSrc;
 }
