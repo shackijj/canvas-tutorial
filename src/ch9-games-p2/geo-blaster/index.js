@@ -3,12 +3,18 @@ import partsSrc from './parts.png';
 import saucerSrc from './saucer.png';
 import shipTilesSrc from './ship_tiles.png';
 import shipTiles2Src from './ship_tiles2.png';
+import smallRocksTilesSrc from './smallrocks.png';
+import mediumRocksTilesSrc from './mediumrocks.png';
+import largeRocksTilesSrc from './largerocks.png';
 
 // Images
 let parts = new Image();
 let shipTiles = new Image();
 let shipTiles2 = new Image();
 let saucerTiles = new Image();
+let smallRocksTiles = new Image();
+let mediumRocksTiles = new Image();
+let largeRocksTiles = new Image();
 
 
 const frameRateCounter = new FrameRateCounter();
@@ -221,7 +227,14 @@ function createSaucer() {
 function updateRock(rock) {
     const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
     testWallsAndMove(rock);
-    rock.rotation += rotationInc;
+    let newRotation = rotation + rotationInc;
+    if (newRotation >= 360) {
+        newRotation = 0;
+    }
+    if (newRotation < 0) {
+        newRotation = 359;
+    }
+    rock.rotation = newRotation;
 }
 
 function updateSaucers() {
@@ -307,12 +320,15 @@ function checkRocks() {
                 rocks.splice(j, 1);
                 playerMissiles.splice(i, 1);
                 let newWidth;
-                switch(rock.width) {
-                    case 50:
-                        newWidth = 30;
-                        break;
-                    case 30:
+                let newScale;
+                switch(rock.scale) {
+                    case 1:
                         newWidth = 20;
+                        newScale = 2;
+                        break;
+                    case 2:
+                        newWidth = 14;
+                        newScale = 3;
                         break;
                 }
                 const width = newWidth;
@@ -435,21 +451,25 @@ function renderSaucers() {
 }
 
 function renderRock(rock) {
-    const {x, y, halfHeight, halfWidth, rotation, scale} = rock;
+    const {x, y, width, height, rotation, scale} = rock;
     context.save();
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.translate(x + halfWidth, y + halfHeight);
-    const angleInRadians = rotation * Math.PI / 180;
-    context.rotate(angleInRadians);
-    context.strokeStyle = '#ffffff';
-    context.beginPath();
-    context.moveTo(-1 * halfWidth, -1 * halfWidth);
-    context.lineTo(halfWidth, -1 * halfWidth);
-    context.lineTo(halfWidth, halfWidth);
-    context.lineTo(-1 * halfHeight, halfHeight);
-    context.lineTo(-1 * halfWidth, -1 * halfWidth);
-    context.stroke();
-    context.closePath();
+    const sourceX = Math.floor(rotation % 5) * width;
+    const sourceY = 0;
+
+    let tile;
+    switch(scale) {
+        case 1:
+            tile = largeRocksTiles;
+            break;
+        case 2:
+            tile = mediumRocksTiles;
+            break;
+        case 3:
+            tile = smallRocksTiles;
+            break;
+    }
+    console.log(rotation, sourceX, sourceY);
+    context.drawImage(tile, sourceX, sourceY, width, height, x, y, width, height);
     context.restore();
 }
 
@@ -551,12 +571,12 @@ function gameStateNewLevel() {
     for(let newRockCnt = 0; newRockCnt < level + 3; newRockCnt++) {
         rocks.push({
             scale: 1,
-            width: 50,
-            height: 50,
-            hitHeight: 50,
-            hitWidth: 50,
-            halfHeight: 25,
-            halfWidth: 25,
+            width: 45,
+            height: 45,
+            hitHeight: 45,
+            hitWidth: 45,
+            halfHeight: 22,
+            halfWidth: 22,
             x: Math.floor(Math.random() * 50),
             y: Math.floor(Math.random() * 50),
             dx: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
@@ -612,7 +632,7 @@ function gameLoop() {
 }
 
 export function canvasApp() {
-    let itemsToLoad = 4;
+    let itemsToLoad = 7;
     let itemsLoaded = 0;
 
     function itemLoaded() {
@@ -630,4 +650,10 @@ export function canvasApp() {
     shipTiles2.src = shipTiles2Src;
     saucerTiles.addEventListener('load', itemLoaded);
     saucerTiles.src = saucerSrc;
+    largeRocksTiles.addEventListener('load', itemLoaded);
+    largeRocksTiles.src = largeRocksTilesSrc;
+    mediumRocksTiles.addEventListener('load', itemLoaded);
+    mediumRocksTiles.src = mediumRocksTilesSrc;
+    smallRocksTiles.addEventListener('load', itemLoaded);
+    smallRocksTiles.src = smallRocksTilesSrc;
 }
