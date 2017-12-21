@@ -215,6 +215,7 @@ function createSaucer() {
             hitWidth: 15,
             halfHeight: 15,
             halfWidth: 7,
+            fireCount: 0,
             x: Math.floor(Math.random() * 50),
             y: Math.floor(Math.random() * 50),
             dx: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
@@ -225,20 +226,40 @@ function createSaucer() {
 }
 
 function updateRock(rock) {
-    const {x, dx, y, dy, halfHeight, halfWidth, rotation, rotationInc} = rock;
     testWallsAndMove(rock);
-    let newRotation = rotation + rotationInc;
-    if (newRotation >= 360) {
-        newRotation = 0;
+    rock.animationCount++;
+    if (rock.animationCount > rock.animationDelay) {
+        rock.rotation += rock.rotationInc;
+        rock.animationCount = 0;
+        if (rock.rotation > 4) {
+            rock.rotation = 0;
+        } else if (rock.rotation < 0) {
+            rock.rotation = 4;
+        }
     }
-    if (newRotation < 0) {
-        newRotation = 359;
-    }
-    rock.rotation = newRotation;
 }
 
 function updateSaucers() {
-    saucers.forEach(testWallsAndMove);
+    saucers.forEach((saucer) => {
+        testWallsAndMove(saucer);
+
+        saucer.fireCount++;
+        if (saucer.fireCount > levelSaucerFireRate) {
+            saucer.fireCount = 0;
+            saucerMissiles.push({
+                x: saucer.x + saucer.halfWidth,  
+                y: saucer.y + saucer.halfHeight,
+                halfWidth: 1,
+                halfHeight: 1,
+                width: 2,
+                height: 2,
+                hitHeight: 2,
+                hitWidth: 2,
+                dx: saucer.dx * 2,
+                dy: saucer.dy * 2,
+            });
+        }
+    });
 }
 
 function updateRocks() {
@@ -323,11 +344,11 @@ function checkRocks() {
                 let newScale;
                 switch(rock.scale) {
                     case 1:
-                        newWidth = 20;
+                        newWidth = 32;
                         newScale = 2;
                         break;
                     case 2:
-                        newWidth = 14;
+                        newWidth = 24;
                         newScale = 3;
                         break;
                 }
@@ -335,9 +356,10 @@ function checkRocks() {
                 const height = newWidth;
                 const halfWidth = newWidth / 2;
                 const halfHeight = newWidth / 2;
-                const hitHeight = newWidth;
-                const hitWidth = newWidth;
+                const hitHeight = newWidth - 8;
+                const hitWidth = newWidth - 8;
                 const newRock1 = Object.assign({}, rock, {
+                    scale: newScale,
                     width,
                     height,
                     halfWidth,
@@ -350,7 +372,7 @@ function checkRocks() {
                 const newRock2 = Object.assign({}, newRock1, {
                     dy: rock.dy * -1,
                 });
-                if (newWidth == 20) {
+                if (newScale === 3) {
                     particles.push(newRock1);
                     particles.push(newRock2);
                 } else {
@@ -388,38 +410,35 @@ function checkCollisions() {
 }
 
 
-function updateMissiles() {
-    for(let i = playerMissiles.length - 1; i >= 0; i--) {
-        const missile = playerMissiles[i];
+function updateMissiles(missiles) {
+    for(let i = missiles.length - 1; i >= 0; i--) {
+        const missile = missiles[i];
         if (missile.x > xMax || missile.x < xMin || missile.y > yMax || missile.y < yMin) {
-            playerMissiles.splice(i, 1);
+            missiles.splice(i, 1);
         }
         missile.x += missile.dx;
         missile.y += missile.dy;
     }
 }
 
+function renderMissile(missile, index) {
+    const {x, y, width, height} = missile;
+    context.save();
+    const sourceX = Math.floor(index % 4) * missile.width;
+    const sourceY = Math.floor(index / 4) * missile.height;
+    context.drawImage(parts, sourceX, sourceY, width, height, x, y, width, height);
+
+    context.restore();
+}
+
 function renderPlayerMissiles() {
-    playerMissiles.forEach((missile) => {
-        const {x, y, halfWidth, halfHeight, rotation} = missile;
-        context.save();
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.translate(x + halfWidth, y + halfHeight);
-        const angleInRadians = rotation * Math.PI / 180;
-        context.rotate(angleInRadians);
-    
-        context.strokeStyle = '#ffffff';
-        context.beginPath();
-        context.moveTo(-1, -1);
-        context.lineTo(1, -1);
-        context.lineTo(1, 1);
-        context.lineTo(-1, 1);
-        context.lineTo(-1, -1);
-        context.stroke();
-        context.closePath();
-    
-        context.restore();
-    })
+    const renderGreeenMissile = (missile) => renderMissile(missile, 1);
+    playerMissiles.forEach(renderGreeenMissile);
+}
+
+function renderSaucerMissiles() {
+    const renderBlueMissile = (missile) => renderMissile(missile, 2);
+    saucerMissiles.forEach(renderBlueMissile);
 }
 
 function renderPlayer() {
@@ -454,7 +473,7 @@ function renderRock(rock) {
     const {x, y, width, height, rotation, scale} = rock;
     context.save();
     const sourceX = Math.floor(rotation % 5) * width;
-    const sourceY = 0;
+    const sourceY = Math.floor(rotation / 5) * height;
 
     let tile;
     switch(scale) {
@@ -468,7 +487,7 @@ function renderRock(rock) {
             tile = smallRocksTiles;
             break;
     }
-    console.log(rotation, sourceX, sourceY);
+
     context.drawImage(tile, sourceX, sourceY, width, height, x, y, width, height);
     context.restore();
 }
@@ -484,12 +503,14 @@ function gameStatePlayLevel() {
     createSaucer();
     updatePlayer();
     updateRocks();
-    updateMissiles();
+    updateMissiles(playerMissiles);
+    updateMissiles(saucerMissiles)
     updateSaucers();
     renderPlayer();
     renderRocks();
     renderSaucers();
     renderPlayerMissiles();
+    renderSaucerMissiles();
     checkCollisions();
     drawScoreboard();
 }
@@ -571,17 +592,19 @@ function gameStateNewLevel() {
     for(let newRockCnt = 0; newRockCnt < level + 3; newRockCnt++) {
         rocks.push({
             scale: 1,
-            width: 45,
-            height: 45,
-            hitHeight: 45,
-            hitWidth: 45,
-            halfHeight: 22,
-            halfWidth: 22,
+            width: 64,
+            height: 64,
+            hitHeight: 56,
+            hitWidth: 56,
+            halfHeight: 32,
+            halfWidth: 32,
             x: Math.floor(Math.random() * 50),
+            animationCount: 0,
+            animationDelay: 5,
             y: Math.floor(Math.random() * 50),
             dx: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
             dy: ((Math.random() * 2) + levelRockMaxSpeedAdjust) * ((Math.random() < .5) ? -1 : 1),
-            rotationInc: ((Math.random() * 5) + 1) * ((Math.random() < .5) ? -1 : 1),
+            rotationInc: (Math.random() < .5) ? -1 : 1,
             scoreValue: bigRockScore,
             rotation: 0,
         });
