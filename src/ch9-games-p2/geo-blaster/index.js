@@ -97,6 +97,7 @@ let saucers = [];
 let playerMissiles = [];
 let particles = [];
 let saucerMissiles = [];
+let particlePool = [];
 
 let levelRockMaxSpeed = 0;
 let levelRockMaxSpeedAdjust = 1;
@@ -352,6 +353,8 @@ function checkRocks() {
                         newScale = 3;
                         break;
                 }
+                createExplosion(
+                    rock.x + rock.halfWidth, rock.y + rock.halfHeight, 10, rock.scale);
                 const width = newWidth;
                 const height = newWidth;
                 const halfWidth = newWidth / 2;
@@ -497,6 +500,80 @@ function renderRocks() {
     particles.forEach(renderRock);
 }
 
+function createExplosion(x, y, num, type) {
+    for (let i = 0; i < num; i++) {
+        let newParticle = {};
+        newParticle.dx = Math.random() * 3;
+        if (Math.random() < 0.5) {
+            newParticle.dx *= -1;
+        }
+
+        newParticle.dy = Math.random() * 3;
+        if (Math.random() < 0.5) {
+            newParticle.dy *= -1;
+        }
+
+        newParticle.life = Math.floor(Math.random() * 30 + 30);
+        newParticle.lifeCounter = 0;
+        newParticle.x = x;
+        newParticle.y = y;
+        newParticle.width = 2;
+        newParticle.height = 2;
+        newParticle.type = type;
+        particlePool.push(newParticle);
+    }
+}
+
+function renderParticles() {
+    particlePool.forEach((particle) => {
+        context.save();
+        let tile;
+
+        switch(particle.type) {
+            case 0:
+                tile = 0;
+                break;
+            case 1:
+                tile = 2;
+                break;
+            case 2:
+                tile = 3;
+                break;
+            case 3:
+                tile = 0;
+                break;
+            case 4:
+                tile = 1;
+                break;
+        }
+
+        const sourceX = Math.floor(tile % 4) * particle.width;
+        const sourceY = Math.floor(tile / 4) * particle.height;
+
+        const {width, height, x, y} = particle;
+        context.drawImage(parts, sourceX, sourceY, width, height, x, y, width, height);
+        context.restore();
+    });
+}
+
+function updateParticles() {
+    for(let i = particlePool.length - 1; i >= 0; i--) {
+        const particle = particlePool[i];
+        particle.lifeCounter++;
+        if (particle.lifeCounter > particle.life) {
+            particlePool.splice(i, 1);
+            continue;
+        }
+
+        if (particle.x > xMax || particle.x < xMin || particle.y > yMax || particle.y < yMin) {
+            particlePool.splice(i, 1);
+            continue;
+        }
+        particle.x += particle.dx;
+        particle.y += particle.dy;
+    }
+}
+
 function gameStatePlayLevel() {
     checkKeys();
     fillBackground();
@@ -506,9 +583,11 @@ function gameStatePlayLevel() {
     updateMissiles(playerMissiles);
     updateMissiles(saucerMissiles)
     updateSaucers();
+    updateParticles();
     renderPlayer();
     renderRocks();
     renderSaucers();
+    renderParticles();
     renderPlayerMissiles();
     renderSaucerMissiles();
     checkCollisions();
