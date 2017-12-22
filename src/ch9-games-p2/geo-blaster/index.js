@@ -6,6 +6,11 @@ import shipTiles2Src from './ship_tiles2.png';
 import smallRocksTilesSrc from './smallrocks.png';
 import mediumRocksTilesSrc from './mediumrocks.png';
 import largeRocksTilesSrc from './largerocks.png';
+import supportedAudioFormat from '../../ch7-audio/supportedAudioFormat';
+
+import explodeMp3 from './explode1.mp3';
+import explodeOgg from './explode1.ogg';
+import explodeWav from './explode1.wav';
 
 // Images
 let parts = new Image();
@@ -21,6 +26,17 @@ const frameRateCounter = new FrameRateCounter();
 
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 400;
+
+const audioContext = new (window.AudioContext || window.webkitAudioContext);
+const audioType = supportedAudioFormat(document.createElement('audio'));
+let explodeSoundBuffer;
+
+function playSound(soundBuffer) {
+    var source = audioContext.createBufferSource();
+    source.buffer = soundBuffer;
+    source.connect(audioContext.destination);
+    source.start(0);
+}
 
 const container = document.getElementById('app');
 const theCanvas = document.createElement('canvas');
@@ -311,7 +327,11 @@ function checkParticales() {
     missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
         const missile = playerMissiles[i];
         for(let j = particles.length - 1; j >= 0; j--) {
-            if (hitTest(missile, particles[j])) {
+            const particle = particles[j];
+            if (hitTest(missile, particle)) {
+                createExplosion(
+                    particle.x + particle.halfWidth, particle.y + particle.halfHeight, 10, 4);
+                playSound(explodeSoundBuffer);
                 particles.splice(j, 1);
                 playerMissiles.splice(i, 1);
                 break missile;
@@ -324,7 +344,11 @@ function checkSaucers() {
     missile: for(let i = playerMissiles.length - 1; i >= 0; i--) {
         const missile = playerMissiles[i];
         for(let j = saucers.length - 1; j >= 0; j--) {
+            const saucer = saucers[j];
             if (hitTest(missile, saucers[j])) {
+                createExplosion(
+                    saucer.x + saucer.halfWidth, saucer.y + saucer.halfHeight, 10, 4);
+                playSound(explodeSoundBuffer);
                 saucers.splice(j, 1);
                 playerMissiles.splice(i, 1);
                 break missile;
@@ -355,6 +379,7 @@ function checkRocks() {
                 }
                 createExplosion(
                     rock.x + rock.halfWidth, rock.y + rock.halfHeight, 10, rock.scale);
+                playSound(explodeSoundBuffer);
                 const width = newWidth;
                 const height = newWidth;
                 const halfWidth = newWidth / 2;
@@ -734,7 +759,7 @@ function gameLoop() {
 }
 
 export function canvasApp() {
-    let itemsToLoad = 7;
+    let itemsToLoad = 8;
     let itemsLoaded = 0;
 
     function itemLoaded() {
@@ -744,6 +769,38 @@ export function canvasApp() {
         }
     }
 
+    function loadExplodeSound() {
+        const request = new XMLHttpRequest();
+        let url;
+        switch(audioType) {
+            case 'mp3':
+                url = explodeMp3;
+                break;
+            case 'ogg':
+                url = explodeOgg;
+                break;
+            case 'wav':
+                url = explodeWav;
+                break;
+            default:
+                alert('Cannot find url for audio');
+                return;
+        }
+        function onError() {
+            alert(`error loading sound ${url}`);
+        }
+        request.open('GET', url);
+        request.responseType = 'arraybuffer';
+        request.onload = function() {
+            audioContext.decodeAudioData(request.response, function(buffer) {
+                explodeSoundBuffer = buffer;
+                itemLoaded();
+            }, onError);
+        }
+        request.send();
+    }
+
+    loadExplodeSound();
     parts.addEventListener('load', itemLoaded);
     parts.src = partsSrc;
     shipTiles.addEventListener('load', itemLoaded);
